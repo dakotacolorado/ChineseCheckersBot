@@ -1,8 +1,9 @@
-import unittest
-from chinese_checkers_game.hexagram import Hexagram
+from unittest import TestCase
+
+from src.chinese_checkers_game.hexagram import Hexagram
 
 
-class TestHexagram(unittest.TestCase):
+class TestHexagram(TestCase):
 
     def setUp(self):
         # Setting up a range of hexagrams for testing
@@ -28,7 +29,3 @@ class TestHexagram(unittest.TestCase):
         for H in self.hexagrams:
             for p in H.hexagram_points:
                 self.assertLessEqual(abs(p[0]) + abs(p[1]), 3 * H.radius)
-
-
-if __name__ == '__main__':
-    unittest.main()
