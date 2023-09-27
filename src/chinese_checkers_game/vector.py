@@ -1,6 +1,5 @@
-
 class Vector:
-    
+
     def __init__(self, i: int, j: int):
         self.i = i
         self.j = j
@@ -13,3 +12,6 @@ class Vector:
 
     def __hash__(self):
         return hash((self.i, self.j))
+
+    def __repr__(self):
+        return f"({self.i}, {self.j})"

@@ -32,7 +32,7 @@ class TestVector(TestCase):
     def test_vector_in_set(self):
         v1 = Vector(1, 2)
         v2 = Vector(1, 2)  # Equal to v1
-        v3 = Vector(3, 4)  # Different from v1
+        v3 = Vector(2, 1)  # Different from v1
 
         s = {v1}
 
@@ -43,3 +43,10 @@ class TestVector(TestCase):
         # Adding v3 should increase the set size
         s.add(v3)
         self.assertEqual(len(s), 2)
+
+    def test_repr_method(self):
+        v = Vector(3, 4)
+        self.assertEqual(repr(v), "(3, 4)")
+
+
+
