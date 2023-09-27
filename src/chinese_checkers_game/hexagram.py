@@ -1,12 +1,9 @@
 from typing import List, Tuple
 
+from src.chinese_checkers_game.vector import Vector
+
 
 class Hexagram:
-    # six corner points of a hexagon, written in the following 2d basis
-    hexagon_points: Tuple[int, int] = [
-        (1, 0), (0, 1), (-1, 1),
-        (-1, 0), (0, -1), (1, -1)
-    ]
 
     def __init__(self, radius: int):
         """
@@ -20,15 +17,20 @@ class Hexagram:
 
         self.radius = radius
 
+        # six corner points of a hexagon, written in the following 2d basis
+        self.hexagon_points: List[Vector] = [
+            Vector(i, j) for i, j in [(1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1)]
+        ]
+
         # lines between two neighbor points in a hexagon
-        self.hexagon_edges: List[Tuple[int, int]] = [
+        self.hexagon_edges: List[Tuple[Vector, Vector]] = [
             (p, self.hexagon_points[(i + 1) % 6])
             for i, p in enumerate(self.hexagon_points)
         ]
 
         # square lattice of points with height/width equal to the length of the hexagram's inner radius
-        self.rhombus_grid: List[Tuple[int, int]] = [
-            (i, j)
+        self.rhombus_grid: List[Vector] = [
+            Vector(i, j)
             for i in range(0, self.radius + 1)
             for j in range(1, self.radius + 1)
         ]
@@ -38,21 +40,21 @@ class Hexagram:
         To do this we transform the rhombus points into the hexagon basis represented by each hexagon 
         edge.  This project the rhombus onto each edge of the hexagon and creates the hexagram.  
         """
-        self.hexagram_points: List[Tuple[int, int]] = [
-            (
-                hexagon_edge[0][0] * rhombus_point[0] + hexagon_edge[1][0] * rhombus_point[1],
-                hexagon_edge[0][1] * rhombus_point[0] + hexagon_edge[1][1] * rhombus_point[1],
+        self.hexagram_points: List[Vector] = list({
+            Vector(
+                hexagon_edge[0].i * rhombus_point.i + hexagon_edge[1].i * rhombus_point.i,
+                hexagon_edge[0].j * rhombus_point.i + hexagon_edge[1].j * rhombus_point.i,
             )
             for rhombus_point in self.rhombus_grid
             for hexagon_edge in self.hexagon_edges
-        ]
+        })
 
         """
         Within the rhombus grid defined above, the triangle grid is the upper half of the rhombus.  
         These are all the points that are strictly above the mid-line of the rhombus.
         """
-        self.triangle_grid: List[Tuple[int, int]] = [
-            (i, j)
+        self.triangle_grid: List[Vector] = [
+            Vector(i, j)
             for i in range(1, self.radius + 1)
             for j in range(self.radius - i + 1, self.radius + 1)
         ]
@@ -62,11 +64,11 @@ class Hexagram:
         hexagram (the outer triangles).  To get these points we project the triangle grid 
         into the hexagon basis represented by each hexagon edge. 
         """
-        self.hexagram_corner_points: List[Tuple[int, int]] = [
-            (
-                hexagon_edge[0][0] * rhombus_point[0] + hexagon_edge[1][0] * rhombus_point[1],
-                hexagon_edge[0][1] * rhombus_point[0] + hexagon_edge[1][1] * rhombus_point[1],
+        self.hexagram_corner_points: List[Vector] = list({
+            Vector(
+                hexagon_edge[0].i * rhombus_point.i + hexagon_edge[1].j * rhombus_point.j,
+                hexagon_edge[0].j * rhombus_point.i + hexagon_edge[1].i * rhombus_point.j,
             )
             for rhombus_point in self.triangle_grid
             for hexagon_edge in self.hexagon_edges
-        ]
+        })
