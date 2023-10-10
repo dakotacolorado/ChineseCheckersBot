@@ -1,6 +1,6 @@
 from typing import List
 
-from .hexagram import Hexagram
+from src.chinese_checkers.geometry.hexagram import Hexagram
 from .move import Move
 from .player import Player
 from .position import Position
