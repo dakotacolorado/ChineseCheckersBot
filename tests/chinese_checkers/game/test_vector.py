@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from src.chinese_checkers_game.vector import Vector
+from chinese_checkers.game.vector import Vector
 
 
 class TestVector(TestCase):

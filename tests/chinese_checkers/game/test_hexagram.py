@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from src.chinese_checkers_game.vector import Vector
-from src.chinese_checkers_game.hexagram import Hexagram
+from chinese_checkers.game.hexagram import Hexagram
+from chinese_checkers.game.vector import Vector
 
 
 class TestHexagram(TestCase):

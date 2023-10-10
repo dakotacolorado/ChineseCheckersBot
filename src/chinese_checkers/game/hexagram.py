@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from src.chinese_checkers_game.vector import Vector
+from .vector import Vector
 
 
 class Hexagram:
