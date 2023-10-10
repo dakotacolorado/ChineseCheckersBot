@@ -61,10 +61,10 @@ class Hexagram:
         self.hexagram_corner_points: Dict[int, List[Vector]] = {
             index: [
                 Vector(
-                    start.i * triangle_point.i + end.j * triangle_point.j,
-                    start.j * triangle_point.i + end.i * triangle_point.j,
+                    start.i * grid_point.i + end.i * grid_point.j,
+                    start.j * grid_point.i + end.j * grid_point.j,
                 )
-                for triangle_point in self.triangle_grid
+                for grid_point in self.triangle_grid
             ]
             for index, (start, end) in enumerate(self.hexagon_edges)
         }
