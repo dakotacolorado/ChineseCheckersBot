@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from src.chinese_checkers.game.hexagram import Hexagram
+from src.chinese_checkers.geometry.hexagram import Hexagram
 from src.chinese_checkers.game import GameRuleEngine
 from src.chinese_checkers.game.position import Position
 from src.chinese_checkers.game.player import Player

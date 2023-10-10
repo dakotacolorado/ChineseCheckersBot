@@ -2,8 +2,8 @@ from unittest import TestCase
 
 from pydash import flatten
 
-from src.chinese_checkers.game.hexagram import Hexagram
-from src.chinese_checkers.game.vector import Vector
+from src.chinese_checkers.geometry.hexagram import Hexagram
+from src.chinese_checkers.geometry.vector import Vector
 
 
 class TestHexagram(TestCase):

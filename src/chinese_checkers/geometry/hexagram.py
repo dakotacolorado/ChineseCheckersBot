@@ -37,14 +37,14 @@ class Hexagram:
         self.rhombus_grid: List[Vector] = [
             Vector(i, j)
             for i in range(self.radius + 1)
-            for j in range(1, self.radius + 1)
+            for j in range(self.radius + 1)
         ]
 
         # Construct hexagram points by projecting a rhombus onto each hexagon edge.
         self.hexagram_points: List[Vector] = list({
             Vector(
-                start.i * grid_point.i + end.i * grid_point.i,
-                start.j * grid_point.i + end.j * grid_point.i,
+                start.i * grid_point.i + end.i * grid_point.j,
+                start.j * grid_point.i + end.j * grid_point.j,
             )
             for grid_point in self.rhombus_grid
             for (start, end) in self.hexagon_edges
