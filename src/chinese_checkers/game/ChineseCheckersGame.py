@@ -75,37 +75,3 @@ class ChineseCheckersGame:
             p for player in self.players
             for p in player.positions
         ]
-
-    def __str__(self):
-        j_min = min(self.board.hexagon_points, key=lambda p: p.j)
-        j_max = max(self.board.hexagon_points, key=lambda p: p.j)
-
-        i_min = min(self.board.hexagon_points, key=lambda p: p.i)
-        i_max = max(self.board.hexagon_points, key=lambda p: p.i)
-
-
-        def get_character_for_position(i: int, j: int) -> str:
-            pos = Position(i, j)
-            if pos in self.__get_all_positions():
-                return "X"
-            elif pos in self.board.hexagram_points:
-                return "O"
-            else:
-                return "_"
-
-        board_string = "\n".join([
-            "".join([
-                get_character_for_position(i, j)
-                for j in range(-self.board.radius-2, self.board.radius + 3)
-            ])
-            for i in range(-self.board.radius-2, self.board.radius + 3)
-        ])
-
-        return f"""
-Turn: {self.turn}
-Current Player: {self.get_current_player()}
-Board:
-{board_string}
-Hexagram: 
-{self.board}
-"""

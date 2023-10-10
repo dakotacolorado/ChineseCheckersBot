@@ -68,18 +68,3 @@ class Hexagram:
             ]
             for index, (start, end) in enumerate(self.hexagon_edges)
         }
-
-    def __str__(self):
-        board_string = "\n".join([
-            "".join([
-                "X" if Vector(i, j) in self.hexagram_points else "_"
-                for j in range(-self.radius-2, self.radius + 3)
-            ])
-            for i in range(-self.radius-2, self.radius + 3)
-        ])
-        return f"""
-Hexagram(radius={self.radius})
-Hexagram Points: {self.hexagram_points}
-Picture:
-{board_string}
-"""

@@ -17,18 +17,10 @@ class Printer:
             self,
             grid_points: List[Vector],
             green_points: List[Vector] = [],
-            red_points: List[Vector] = []
+            red_points: List[Vector] = [],
+            yellow_points: List[Vector] = []
     ):
-        """
-        Print a grid of points, with optional green and red points.
-        Args:
-            grid:
-            green_points:
-            red_points:
 
-        Returns:
-
-        """
         regularization = lambda v: (
             -v.i - v.j / 2,
             np.sqrt(3) * v.j / 2
@@ -37,6 +29,7 @@ class Printer:
         regular_grid_points = map_(grid_points, regularization)
         regular_green_points = map_(green_points, regularization)
         regular_red_points = map_(red_points, regularization)
+        regular_yellow_points = map_(yellow_points, regularization)
 
         fig, ax = plt.subplots(1, figsize=(self.print_size, self.print_size))
         ax.set_aspect('equal')
@@ -46,6 +39,8 @@ class Printer:
                 return "Green"
             elif point in regular_red_points:
                 return "Red"
+            elif point in regular_yellow_points:
+                return "Yellow"
             else:
                 return "Blue"
 
