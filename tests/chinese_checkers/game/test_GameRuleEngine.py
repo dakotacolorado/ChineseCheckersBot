@@ -1,10 +1,10 @@
 from unittest import TestCase
 
-from chinese_checkers.game.hexagram import Hexagram
-from chinese_checkers.game import GameRuleEngine
-from chinese_checkers.game.position import Position
-from chinese_checkers.game.player import Player
-from chinese_checkers.game.move import Move
+from src.chinese_checkers.game.hexagram import Hexagram
+from src.chinese_checkers.game import GameRuleEngine
+from src.chinese_checkers.game.position import Position
+from src.chinese_checkers.game.player import Player
+from src.chinese_checkers.game.move import Move
 
 
 class TestGameRuleEngine(TestCase):
