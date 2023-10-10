@@ -25,5 +25,3 @@
     ```bash
     pip install -e . 
     ```
-    
- from chinese_checkers_bot.game import ChineseCheckersGame
