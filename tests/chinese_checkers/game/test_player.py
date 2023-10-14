@@ -9,26 +9,22 @@ class TestPlayer(TestCase):
 
     def test_initialization(self):
         # set-up
-        pos1 = Position(1, 2)
-        pos2 = Position(3, 4)
-        pos3 = Position(5, 6)
-        pos4 = Position(7, 8)
+        positions = [Position(1, 1), Position(2, 2), Position(3, 3)]
+        target_positions = [Position(1, 1), Position(2, 2), Position(4, 4)]
 
         # exercise
-        player = Player([pos1, pos2], [pos3, pos4])
+        player = Player(positions, target_positions, "player1")
 
         # verify
-        self.assertEqual(len(player.positions), 2)
-        self.assertEqual(player.positions[0], pos1)
-        self.assertEqual(player.positions[1], pos2)
-        self.assertEqual(player.target_positions[0], pos3)
-        self.assertEqual(player.target_positions[1], pos4)
+        self.assertEqual(len(player.positions), 3)
+        self.assertEqual(player.positions, positions)
+        self.assertEqual(player.target_positions, target_positions)
 
     def test_apply_move(self):
         # set-up
         pos1 = Position(1, 2)
         pos2 = Position(3, 4)
-        player = Player([pos1, pos2], [])
+        player = Player([pos1, pos2], [], "player1")
         move = Move(1, 1, pos1)
 
         # exercise
@@ -38,3 +34,33 @@ class TestPlayer(TestCase):
         expected_pos = Position(2, 3)
         self.assertEqual(new_player.positions[0], expected_pos)
         self.assertEqual(new_player.positions[1], pos2)
+
+    def test_eq_same_player_id(self):
+        player1 = Player([], [], "player1")
+        player2 = Player([], [], "player1")
+
+        # verify
+        self.assertTrue(player1 == player2)
+
+    def test_eq_different_player_id(self):
+        player1 = Player([], [], "player1")
+        player2 = Player([], [], "player2")
+
+        # verify
+        self.assertFalse(player1 == player2)
+
+    def test_player_has_reached_target(self):
+        positions = [Position(1, 1), Position(2, 2), Position(3, 3)]
+        target_positions = positions
+        player = Player(positions, target_positions, "player1")
+
+        # verify
+        self.assertTrue(player.has_player_reached_target())
+
+    def test_player_has_not_reached_target(self):
+        positions = [Position(1, 1), Position(2, 2), Position(3, 3)]
+        target_positions = [Position(1, 1), Position(2, 2), Position(4, 4)]
+        player = Player(positions, target_positions, "player2")
+
+        # verify
+        self.assertFalse(player.has_player_reached_target())

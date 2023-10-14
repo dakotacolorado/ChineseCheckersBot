@@ -28,3 +28,6 @@ class Player:
 
     def __eq__(self, other: 'Player') -> bool:
         return self.player_id == other.player_id
+
+    def has_player_reached_target(self) -> bool:
+        return set(self.positions) == set(self.target_positions)
