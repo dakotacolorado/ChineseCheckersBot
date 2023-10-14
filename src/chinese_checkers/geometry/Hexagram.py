@@ -5,6 +5,14 @@ from .Vector import Vector
 
 class Hexagram:
 
+    radius: int
+    hexagon_points: List[Vector]
+    hexagon_edges: List[Tuple[Vector, Vector]]
+    rhombus_grid: List[Vector]
+    hexagram_points: List[Vector]
+    triangle_grid: List[Vector]
+    hexagram_corner_points: Dict[int, List[Vector]]
+
     def __init__(self, radius: int):
         """
         Initialize a Hexagram object.
