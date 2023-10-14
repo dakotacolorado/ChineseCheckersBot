@@ -1,5 +1,5 @@
-# ChineseCheckersBot
- Chinese Checkers bot in Python
+# ChineseCheckersGameEngine
+ Chinese Checkers game engine in Python
 
 ## How To Build and Install the Package Locally
 
