@@ -1,11 +1,11 @@
-# ChineseCheckersBot
- Chinese Checkers bot in Python
+# ChineseCheckersGameEngine
+ Chinese Checkers game engine in Python
 
 ## How To Build and Install the Package Locally
 
 1. **Build:**
    - Open a terminal/command prompt.
-   - Navigate (cd) to the ChineseCheckersBot directory.
+   - Navigate (cd) to the ChineseCheckersEngine directory.
    - Run the following command to build your package:
     ```bash
     python setup.py sdist
