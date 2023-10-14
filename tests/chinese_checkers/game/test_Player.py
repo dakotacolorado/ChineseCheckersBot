@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from src.chinese_checkers.game.move import Move
-from src.chinese_checkers.game.player import Player
-from src.chinese_checkers.game.position import Position
+from src.chinese_checkers.game.Move import Move
+from src.chinese_checkers.game.Player import Player
+from src.chinese_checkers.game.Position import Position
 
 
 class TestPlayer(TestCase):

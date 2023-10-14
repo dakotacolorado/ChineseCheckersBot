@@ -4,7 +4,7 @@ from matplotlib.patches import RegularPolygon
 from typing import List
 from pydash import map_
 
-from .vector import Vector
+from .Vector import Vector
 
 
 class Printer:
@@ -15,7 +15,7 @@ class Printer:
 
     @staticmethod
     def _regularize_vector(vector: Vector) -> tuple:
-        return (-vector.i - vector.j / 2, np.sqrt(3) * vector.j / 2)
+        return -vector.i - vector.j / 2, np.sqrt(3) * vector.j / 2
 
     @staticmethod
     def _get_color(point, regular_colored_points) -> str:
@@ -52,7 +52,6 @@ class Printer:
                 va='center',
                 fontsize=self.print_size / 2 + 1
             )
-
 
     def print_grid(self, grid_points: List[Vector],
                    green_points: List[Vector] = None,

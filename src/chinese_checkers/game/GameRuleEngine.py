@@ -1,9 +1,9 @@
 from typing import List
 
-from src.chinese_checkers.geometry.hexagram import Hexagram
-from .move import Move
-from .player import Player
-from .position import Position
+from src.chinese_checkers.geometry.Hexagram import Hexagram
+from .Move import Move
+from .Player import Player
+from .Position import Position
 
 
 class GameRuleEngine:

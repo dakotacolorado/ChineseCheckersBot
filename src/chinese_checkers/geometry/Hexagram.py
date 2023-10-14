@@ -1,6 +1,6 @@
 from typing import List, Tuple, Dict
 
-from .vector import Vector
+from .Vector import Vector
 
 
 class Hexagram:

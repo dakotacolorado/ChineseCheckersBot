@@ -1,9 +1,10 @@
 from typing import List, Dict
 
-from src.chinese_checkers.geometry.hexagram import Hexagram
-from .position import Position
-from .move import Move
-from .player import Player
+from src.chinese_checkers.geometry.Hexagram import Hexagram
+from .GameRuleEngine import GameRuleEngine
+from .Move import Move
+from .Player import Player
+import pydash as _
 
 
 class ChineseCheckersGame:

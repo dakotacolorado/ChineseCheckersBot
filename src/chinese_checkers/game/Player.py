@@ -1,7 +1,7 @@
 from typing import List
 
-from .move import Move
-from .position import Position
+from .Move import Move
+from .Position import Position
 
 
 class Player:

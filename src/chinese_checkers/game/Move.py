@@ -1,5 +1,5 @@
-from src.chinese_checkers.geometry.vector import Vector
-from .position import Position
+from src.chinese_checkers.geometry.Vector import Vector
+from .Position import Position
 
 
 class Move(Vector):
