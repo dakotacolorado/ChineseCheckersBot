@@ -12,3 +12,6 @@ class Move(Vector):
     def apply(self) -> Position:
         return Position(self.i + self.position.i, self.j + self.position.j)
 
+    def __str__(self):
+        return f"Move({self.i}, {self.j}), Position{self.position}"
+

@@ -19,3 +19,11 @@ class TestMove(TestCase):
         new_pos = move.apply()
         self.assertEqual(new_pos.i, 2)
         self.assertEqual(new_pos.j, 3)
+
+    def test_str(self):
+        pos = Position(1, 2)
+        move = Move(1, 1, pos)
+
+        # Check if the __str__ method returns the expected string representation
+        expected_str = "Move(1, 1), Position(1, 2)"
+        self.assertEqual(str(move), expected_str)
