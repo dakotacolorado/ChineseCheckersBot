@@ -43,6 +43,8 @@ For more detailed examples, refer to the provided `ipynb` files.
 
 - **matplotlib**==3.8.0
 - **pydash**==7.0.6
+- **numpy**==1.26.0
+
 
 Install directly from the git repository:
 ```
