@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import RegularPolygon
-from typing import List
-from pydash import map_
+from matplotlib import colors
+from typing import List, Dict
+from pydash import flatten
 
 from .Vector import Vector
 
@@ -14,70 +15,71 @@ class Printer:
         self.print_coordinates = print_coordinates
 
     @staticmethod
-    def _regularize_vector(vector: Vector) -> tuple:
-        return -vector.i - vector.j / 2, np.sqrt(3) * vector.j / 2
+    def _regularize_vector(vector: Vector) -> Vector:
+        """Convert a vector to a regular hexagon coordinate system."""
+        return Vector(-vector.i - vector.j / 2, np.sqrt(3) * vector.j / 2)
 
     @staticmethod
-    def _get_color(point, regular_colored_points) -> str:
-        if point in regular_colored_points["green"]:
-            return "Green"
-        elif point in regular_colored_points["red"]:
-            return "Red"
-        elif point in regular_colored_points["yellow"]:
-            return "Yellow"
-        return "Blue"
+    def _get_point_colors(points_list: List[List[Vector]]) -> Dict[Vector, str]:
+        """Assign colors to points based on their list."""
+        return {
+            point: list(colors.TABLEAU_COLORS.keys())[i]
+            for i, points in enumerate(points_list)
+            for point in points
+        }
 
-    def _plot_points(self, ax, regular_grid_points, regular_colored_points):
-        for point in regular_grid_points:
+    @staticmethod
+    def _plot_hexagon_points(ax: plt.Axes, points: List[Vector], point_colors: Dict[Vector, str]) -> None:
+        """Plot the hexagons on the provided axes."""
+        for point in points:
             ax.add_patch(
                 RegularPolygon(
-                    point,
+                    (point.i, point.j),
                     numVertices=6,
                     radius=0.58,
-                    facecolor=self._get_color(point, regular_colored_points),
+                    facecolor=point_colors[point],
                     alpha=0.3,
                     edgecolor='k'
                 )
             )
-        ax.scatter([point[0] for point in regular_grid_points],
-                   [point[1] for point in regular_grid_points],
-                   alpha=0.1)
+        ax.scatter([point.i for point in points],
+                   [point.j for point in points],
+                   alpha=0)  # make this > 0 to see the points
 
-    def _annotate_points(self, ax, grid_points, regular_grid_points):
-        for original, regular in zip(grid_points, regular_grid_points):
+    def _annotate_points(self, ax: plt.Axes, points: List[Vector], point_annotations: List[Vector]) -> None:
+        """Annotate the hexagons with coordinates."""
+        for point, annotation in zip(points, point_annotations):
             ax.annotate(
-                f"({original.i}, {original.j})",
-                (regular[0], regular[1]),
+                f"({annotation.i}, {annotation.j})",
+                (point.i, point.j),
                 ha='center',
                 va='center',
                 fontsize=self.print_size / 2 + 1
             )
 
-    def print_grid(self, grid_points: List[Vector],
-                   green_points: List[Vector] = None,
-                   red_points: List[Vector] = None,
-                   yellow_points: List[Vector] = None):
-        if green_points is None:
-            green_points = []
-        if red_points is None:
-            red_points = []
-        if yellow_points is None:
-            yellow_points = []
+    def print_grid(self, point_group: List[Vector], *additional_point_groups: List[List[Vector]]) -> None:
+        """Render the grid of hexagons. Colored by group."""
+        all_point_groups = [point_group] + list(additional_point_groups)
 
-        regular_colored_points = {
-            "green": map_(green_points, self._regularize_vector),
-            "red": map_(red_points, self._regularize_vector),
-            "yellow": map_(yellow_points, self._regularize_vector)
-        }
+        regularized_point_groups = [
+            [
+                self._regularize_vector(point)
+                for point in points_group
+            ]
+            for points_group in all_point_groups
+        ]
 
-        regular_grid_points = map_(grid_points, self._regularize_vector)
+        point_colors = self._get_point_colors(regularized_point_groups)
+
+        all_points = flatten(all_point_groups)
+        regularized_points = flatten(regularized_point_groups)
 
         fig, ax = plt.subplots(1, figsize=(self.print_size, self.print_size))
         ax.set_aspect('equal')
 
-        self._plot_points(ax, regular_grid_points, regular_colored_points)
+        self._plot_hexagon_points(ax, regularized_points, point_colors)
 
         if self.print_coordinates:
-            self._annotate_points(ax, grid_points, regular_grid_points)
+            self._annotate_points(ax, regularized_points, all_points)
 
         plt.show()

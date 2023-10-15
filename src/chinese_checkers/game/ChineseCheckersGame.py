@@ -1,10 +1,12 @@
 from typing import List, Dict
 
-from src.chinese_checkers.geometry.Hexagram import Hexagram
 from .GameRuleEngine import GameRuleEngine
 from .Move import Move
 from .Player import Player
 import pydash as _
+
+from ..geometry.Hexagram import Hexagram
+from ..geometry.Printer import Printer
 
 
 class ChineseCheckersGame:
@@ -25,10 +27,10 @@ class ChineseCheckersGame:
 
         # Depending on the amount of players a different subset of starting corners will be used.
         starting_player_corners: Dict[int, List[int]] = {
-            2: [1, 4],
-            3: [1, 3, 5],
-            4: [1, 2, 4, 5],
-            6: [1, 2, 3, 4, 5, 6],
+            2: [0, 3],
+            3: [0, 2, 4],
+            4: [0, 1, 3, 4],
+            6: [0, 1, 2, 3, 4, 5],
         }
 
         # Create a player for each starting corner.
@@ -37,6 +39,7 @@ class ChineseCheckersGame:
                 hexagram.hexagram_corner_points[corner_index],
                 # opposite corner is the corner with the same index + 3 (mod 6)
                 hexagram.hexagram_corner_points[(corner_index + 3) % 6],
+                f"Player {corner_index}"
             )
             for corner_index in starting_player_corners[number_of_players]
         ]
@@ -52,6 +55,7 @@ class ChineseCheckersGame:
         self.players = players
         self.turn = turn
         self.board = board
+        self.printer = Printer()
 
     def apply_move(self, move: Move) -> 'ChineseCheckersGame':
         return ChineseCheckersGame(
@@ -92,3 +96,12 @@ class ChineseCheckersGame:
             bool: True if the game is won.
         """
         return _.some(self.players, lambda p: p.has_player_reached_target())
+
+    def update_printer_settings(self, print_size: int = 10, print_coordinates: bool = False):
+        self.printer = Printer(print_size, print_coordinates)
+
+    def print(self):
+        self.printer.print_grid(
+            self.board.hexagram_points,
+            *[p.positions for p in self.players]
+        )
