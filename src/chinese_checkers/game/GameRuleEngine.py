@@ -1,9 +1,10 @@
-from typing import List
+from typing import List, Set
 
-from src.chinese_checkers.geometry.Hexagram import Hexagram
 from .Move import Move
 from .Player import Player
 from .Position import Position
+from ..geometry.Vector import Vector
+from ..geometry.Hexagram import Hexagram
 
 
 class GameRuleEngine:
@@ -31,40 +32,85 @@ class GameRuleEngine:
             for unit_move in self.unit_moves:
                 # Check for simple moves
                 new_position = Position(position.i + unit_move.i, position.j + unit_move.j)
-                if self.__is_position_valid(new_position):
+                if self._is_position_valid(new_position):
                     next_moves.append(Move(unit_move.i, unit_move.j, position))
 
                 # Check for hop moves and chain hops
-                hops = self.__get_hop_moves(position, [], unit_move)
+                hops = self._get_hop_moves(position, {position}, unit_move)
                 next_moves.extend(hops)
 
         return next_moves
 
-    def __get_hop_moves(
+    def _get_hop_moves(
             self,
             position: Position,
-            visited: List[Position],
-            unit_move: Position
+            visited: Set[Position],
+            unit_move: Vector,
+            root_position: Position = None
     ) -> List[Move]:
-        hops = []
-        adjacent_position = Position(position.i + unit_move.i, position.j + unit_move.j)
-        jump_position = Position(position.i + 2 * unit_move.i, position.j + 2 * unit_move.j)
+        """
+        Recursively finds all possible hop moves from a given position.
 
-        if self.__is_position_valid(
-                jump_position) and adjacent_position in self.occupied_positions and jump_position not in visited:
-            hops.append(Move(2 * unit_move.i, 2 * unit_move.j, position))
-            visited.append(jump_position)
+        Note. Ensure that the visited set is initialized with the starting position.
+
+        Args:
+            position: position to check for hop moves from
+            visited: set of visited positions
+            unit_move: the unit move to check for hops in
+
+        Returns:
+            The list of hop moves from the given position.
+        """
+        if root_position is None:
+            root_position = position
+
+        hops = []
+        adjacent_position = position + unit_move
+        jump_position = position + unit_move * 2
+
+        # Check for hop moves
+        if self._is_position_valid(jump_position) \
+                and adjacent_position in self.occupied_positions \
+                and jump_position not in visited:
+            # Add the hop move
+            move_from_root_position = jump_position - root_position
+            hops.append(Move(move_from_root_position.i, move_from_root_position.j, root_position))
+            visited.add(jump_position)
+
             # Recursive call for chained hops
             for unit in self.unit_moves:
-                hops.extend(self.__get_hop_moves(jump_position, visited, unit))
-
+                hops.extend(self._get_hop_moves(jump_position, visited, unit, root_position))
         return hops
 
-    def __is_position_in_bounds(self, position: Position) -> bool:
+    def _is_position_in_bounds(self, position: Position) -> bool:
+        """
+        Checks if a position is within the bounds of the board.
+        Args:
+            position: position to check
+
+        Returns:
+            True if the position is within the bounds of the board, False otherwise.
+        """
         return position in self.board_positions
 
-    def __is_position_open(self, position: Position) -> bool:
+    def _is_position_open(self, position: Position) -> bool:
+        """
+        Checks if a position is open.
+        Args:
+            position: position to check
+
+        Returns:
+            True if the position is open, False otherwise.
+        """
         return position not in self.occupied_positions
 
-    def __is_position_valid(self, position: Position) -> bool:
-        return self.__is_position_in_bounds(position) and self.__is_position_open(position)
+    def _is_position_valid(self, position: Position) -> bool:
+        """
+        Checks if a position is valid.
+        Args:
+            position: position to check
+
+        Returns:
+            True if the position is valid, False otherwise.
+        """
+        return self._is_position_in_bounds(position) and self._is_position_open(position)
