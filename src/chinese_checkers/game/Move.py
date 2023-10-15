@@ -12,6 +12,11 @@ class Move(Vector):
     def apply(self) -> Position:
         return Position(self.i + self.position.i, self.j + self.position.j)
 
-    def __str__(self):
-        return f"Move({self.i}, {self.j}), Position{self.position}"
+    def __eq__(self, other: 'Move') -> bool:
+        return super().__eq__(other) and self.position == other.position
 
+    def __hash__(self):
+        return hash((super().__hash__(), self.position.__hash__()))
+
+    def __repr__(self):
+        return f"Move({self.i}, {self.j}), Position{self.position}"
