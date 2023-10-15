@@ -36,7 +36,7 @@ class ChineseCheckersGame:
             Player(
                 hexagram.hexagram_corner_points[corner_index],
                 # opposite corner is the corner with the same index + 3 (mod 6)
-                hexagram.hexagram_corner_points[(corner_index + 3) % 6]
+                hexagram.hexagram_corner_points[(corner_index + 3) % 6],
             )
             for corner_index in starting_player_corners[number_of_players]
         ]
@@ -71,8 +71,24 @@ class ChineseCheckersGame:
         """
         return self.players[self.turn % len(self.players)]
 
-    def __get_all_positions(self):
+    def get_all_positions(self):
         return [
             p for player in self.players
             for p in player.positions
         ]
+
+    def get_next_moves(self) -> List[Move]:
+        engine = GameRuleEngine(
+            self.get_current_player(),
+            [p for p in self.players if p != self.get_current_player()],
+            self.board
+        )
+        return engine.get_next_moves_for_player()
+
+    def is_game_won(self) -> bool:
+        """
+        Returns true if the game is won.
+        Returns:
+            bool: True if the game is won.
+        """
+        return _.some(self.players, lambda p: p.has_player_reached_target())

@@ -26,6 +26,12 @@ class GameRuleEngine:
         self.current_player = current_player
 
     def get_next_moves_for_player(self) -> List[Move]:
+        """
+        Generates the next possible moves for the current player.
+
+        Returns:
+            List[Move]: The list of possible moves.
+        """
         next_moves = []
 
         for position in self.current_player.positions:
