@@ -48,5 +48,33 @@ class TestVector(TestCase):
         v = Vector(3, 4)
         self.assertEqual(repr(v), "(3, 4)")
 
+    def test_add_method(self):
+        v1 = Vector(1, 2)
+        v2 = Vector(3, 4)
+        self.assertEqual(v1 + v2, Vector(4, 6))
+
+    def test_sub_method(self):
+        v1 = Vector(1, 2)
+        v2 = Vector(3, 4)
+        self.assertEqual(v1 - v2, Vector(-2, -2))
+
+    def test_scalar_multiplication(self):
+        v = Vector(1, 2)
+        self.assertEqual(v * 2, Vector(2, 4))
+
+    def test_scalar_multiplication_with_float(self):
+        v = Vector(1, 2)
+        self.assertEqual(v * 2.0, Vector(2.0, 4.0))
+
+    def test_element_wise_multiplication(self):
+        v1 = Vector(1, 2)
+        v2 = Vector(3, 4)
+        self.assertEqual(v1 * v2, Vector(3, 8))
+
+    def test_string_multiplication(self):
+        v = Vector(1, 2)
+        with self.assertRaises(TypeError):
+            v * "not a vector"
+
 
 
