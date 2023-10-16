@@ -50,12 +50,13 @@ class ChineseCheckersGame:
             self,
             players: List[Player],
             turn: int = 0,
-            board: Hexagram = Hexagram(4)
+            board: Hexagram = Hexagram(4),
+            printer: Printer = Printer()
     ):
         self.players = players
         self.turn = turn
         self.board = board
-        self.printer = Printer()
+        self.printer = printer
 
     def __eq__(self, other: 'ChineseCheckersGame') -> bool:
         return self.players == other.players \
@@ -69,7 +70,8 @@ class ChineseCheckersGame:
                 for player in self.players
             ],
             self.turn + 1,
-            self.board
+            self.board,
+            self.printer
         )
 
     def get_current_player(self) -> Player:
@@ -111,5 +113,5 @@ class ChineseCheckersGame:
     def print(self):
         self.printer.print_grid(
             self.board.hexagram_points,
-            *[p.positions for p in self.players]
+            *[p.positions for p in self.players],
         )
