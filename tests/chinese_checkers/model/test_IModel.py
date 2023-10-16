@@ -19,7 +19,7 @@ class TestIModel(TestCase):
         expected_game = ChineseCheckersGame.start_game()
         expected_game = expected_game.apply_move(current_moves[0])
 
-        model = BasicModel(game)
-        game = model.make_move()
+        model = BasicModel()
+        game = model.make_move(game)
 
         self.assertEqual(expected_game, game)
