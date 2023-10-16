@@ -16,6 +16,12 @@ class Player:
         self.target_positions = target_positions
         self.player_id = player_id
 
+    def __eq__(self, other: 'Player') -> bool:
+        return self.player_id == other.player_id
+
+    def __repr__(self):
+        return f"Player({self.positions}, {self.target_positions}, {self.player_id})"
+
     def apply_move(self, move: Move):
         return Player(
             [
@@ -25,9 +31,6 @@ class Player:
             self.target_positions,
             self.player_id
         )
-
-    def __eq__(self, other: 'Player') -> bool:
-        return self.player_id == other.player_id
 
     def has_player_reached_target(self) -> bool:
         return set(self.positions) == set(self.target_positions)
