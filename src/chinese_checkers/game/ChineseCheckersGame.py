@@ -57,6 +57,11 @@ class ChineseCheckersGame:
         self.board = board
         self.printer = Printer()
 
+    def __eq__(self, other: 'ChineseCheckersGame') -> bool:
+        return self.players == other.players \
+            and self.turn == other.turn \
+            and self.board == other.board
+
     def apply_move(self, move: Move) -> 'ChineseCheckersGame':
         return ChineseCheckersGame(
             [
