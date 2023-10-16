@@ -6,7 +6,14 @@ from ..model.IModel import IModel
 
 class GameSimulation:
 
-    def __init__(self, models: List[IModel], board_size: int = 4, print_period: bool = 0, print_coordinates: bool = False):
+    def __init__(
+            self,
+            models: List[IModel],
+            max_turns: int = 1000,
+            board_size: int = 4,
+            print_period: bool = 0,
+            print_coordinates: bool = False
+    ):
         """
         Simulates a game between the given models.
 
@@ -15,6 +22,7 @@ class GameSimulation:
             board_size: size of the board
             print_period: period to print the game
         """
+        self.max_turns = max_turns
         self.game = ChineseCheckersGame.start_game(
             number_of_players=len(models), board_size=board_size)
 
@@ -25,10 +33,19 @@ class GameSimulation:
         self.games = []
 
     def simulate_game(self) -> ChineseCheckersGame:
-        while not self.game.is_game_won():
+        """
+        Simulates a game between the given models.
+
+        Returns:
+            The winning game state, or None if the game was not won.
+        """
+        while not self.game.is_game_won() and self.game.turn < self.max_turns:
             self.games.append(self.game)
             self.game = self.models[self.game.turn % len(self.models)].make_move(self.game)
             self._print_game()
+
+        if self.game.turn >= self.max_turns:
+            return None
 
         self.games.append(self.game)
         return self.game
