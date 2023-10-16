@@ -17,7 +17,9 @@ class Player:
         self.player_id = player_id
 
     def __eq__(self, other: 'Player') -> bool:
-        return self.player_id == other.player_id
+        return self.player_id == other.player_id and \
+            set(self.positions) == set(other.positions) and \
+            set(self.target_positions) == set(other.target_positions)
 
     def __repr__(self):
         return f"Player({self.positions}, {self.target_positions}, {self.player_id})"

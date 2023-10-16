@@ -27,9 +27,33 @@ class TestPlayer(TestCase):
         # verify
         self.assertTrue(player1 == player2)
 
-    def test_eq_different_player_id(self):
+    def test_eq_different_position_orders(self):
+        position_1 = Position(1, 1)
+        position_2 = Position(0, 1)
+
+        player1 = Player([position_1, position_2], [position_1, position_2], "player1")
+        player2 = Player([position_2, position_1], [position_2, position_1], "player1")
+
+        # verify
+        self.assertTrue(player1 == player2)
+
+    def test_not_eq_different_player_id(self):
         player1 = Player([], [], "player1")
         player2 = Player([], [], "player2")
+
+        # verify
+        self.assertFalse(player1 == player2)
+
+    def test_not_eq_different_positions(self):
+        player1 = Player([Position(1, 1)], [], "player1")
+        player2 = Player([Position(1, 0)], [], "player1")
+
+        # verify
+        self.assertFalse(player1 == player2)
+
+    def test_not_eq_different_target_positions(self):
+        player1 = Player([], [Position(-1, -1)], "player1")
+        player2 = Player([], [Position(-1, 0)], "player1")
 
         # verify
         self.assertFalse(player1 == player2)
