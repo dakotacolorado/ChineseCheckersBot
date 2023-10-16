@@ -75,6 +75,9 @@ class ChineseCheckersGame:
         """
         return self.players[self.turn % len(self.players)]
 
+    def get_other_players(self) -> List[Player]:
+        return [p for p in self.players if p != self.get_current_player()]
+
     def get_all_positions(self):
         return [
             p for player in self.players
