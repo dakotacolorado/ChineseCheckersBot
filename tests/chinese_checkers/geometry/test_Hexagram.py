@@ -43,3 +43,55 @@ class TestHexagram(TestCase):
         for H in self.hexagrams:
             for p in H.hexagram_points:
                 self.assertLessEqual(abs(p.i) + abs(p.j), 3 * H.radius)
+
+    def test_equal(self):
+        for H in self.hexagrams:
+            self.assertEqual(H, H)
+
+    def test_not_equal_different_radius(self):
+        h1 = Hexagram(10)
+        h2 = Hexagram(11)
+
+        self.assertNotEqual(h1, h2)
+
+    def test_not_equal_different_hexagon_points(self):
+        h1 = Hexagram(10)
+        h2 = Hexagram(10)
+        h2.hexagram_points = [Vector(1, 1)]
+
+        self.assertNotEqual(h1, h2)
+
+    def test_not_equal_different_hexagon_edges(self):
+        h1 = Hexagram(10)
+        h2 = Hexagram(10)
+        h2.hexagon_edges = [Vector(1, 1)]
+
+        self.assertNotEqual(h1, h2)
+
+    def test_not_equal_different_rhombus_grid(self):
+        h1 = Hexagram(10)
+        h2 = Hexagram(10)
+        h2.rhombus_grid = [Vector(1, 1)]
+
+        self.assertNotEqual(h1, h2)
+
+    def test_not_equal_different_hexagram_points(self):
+        h1 = Hexagram(10)
+        h2 = Hexagram(10)
+        h2.hexagram_points = [Vector(1, 1)]
+
+        self.assertNotEqual(h1, h2)
+
+    def test_not_equal_different_triangle_grid(self):
+        h1 = Hexagram(10)
+        h2 = Hexagram(10)
+        h2.triangle_grid = [Vector(1, 1)]
+
+        self.assertNotEqual(h1, h2)
+
+    def test_not_equal_different_hexagram_corner_points(self):
+        h1 = Hexagram(10)
+        h2 = Hexagram(10)
+        h2.hexagram_corner_points = [Vector(1, 1)]
+
+        self.assertNotEqual(h1, h2)

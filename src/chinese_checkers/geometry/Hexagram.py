@@ -76,3 +76,12 @@ class Hexagram:
             ]
             for index, (start, end) in enumerate(self.hexagon_edges)
         }
+
+    def __eq__(self, other: 'Hexagram') -> bool:
+        return self.radius == other.radius \
+            and self.hexagon_points == other.hexagon_points \
+            and self.hexagon_edges == other.hexagon_edges \
+            and self.rhombus_grid == other.rhombus_grid \
+            and self.hexagram_points == other.hexagram_points \
+            and self.triangle_grid == other.triangle_grid \
+            and self.hexagram_corner_points == other.hexagram_corner_points
