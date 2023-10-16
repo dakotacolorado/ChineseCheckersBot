@@ -1,4 +1,4 @@
-from src.chinese_checkers.geometry.Vector import Vector
+from ..geometry.Vector import Vector
 
 
 class Position(Vector):
