@@ -11,8 +11,7 @@ from src.chinese_checkers.model.CentroidModel import CentroidModel
 class TestCentroidModel(TestCase):
 
     def setUp(self) -> None:
-        self.game = ChineseCheckersGame.start_game()
-        self.model = CentroidModel(self.game)
+        self.model = CentroidModel()
 
     def test_calculate_centroid_at_zero(self):
         positions = [
