@@ -76,5 +76,13 @@ class TestVector(TestCase):
         with self.assertRaises(TypeError):
             v * "not a vector"
 
+    def test_distance(self):
+        v1 = Vector(1, 1)
+        v2 = Vector(4, 5)
+
+        # verify
+        self.assertEqual(v1.distance(v2), 5.0)
+        self.assertEqual(v1.distance(v1), 0)
+
 
 

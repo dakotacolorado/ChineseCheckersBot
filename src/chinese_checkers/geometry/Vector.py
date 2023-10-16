@@ -31,3 +31,7 @@ class Vector:
             return Vector(self.i * other.i, self.j * other.j)
         else:
             raise TypeError(f"Cannot multiply Vector by {type(other)}")
+
+    def distance(self, other: 'Vector') -> float:
+        return ((self.i - other.i) ** 2 + (self.j - other.j) ** 2) ** 0.5
+
