@@ -32,7 +32,7 @@ class GameSimulation:
         self.models = models
         self.games = []
 
-    def simulate_game(self) -> ChineseCheckersGame:
+    def simulate_game(self) -> List[ChineseCheckersGame]:
         """
         Simulates a game between the given models.
 
@@ -48,7 +48,7 @@ class GameSimulation:
             return None
 
         self.games.append(self.game)
-        return self.game
+        return self.games
 
     def _print_game(self):
         if self.print_period and self.game.turn % self.print_period == 0:
