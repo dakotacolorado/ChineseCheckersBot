@@ -50,7 +50,7 @@ class GameSimulation:
             self._print_game()
 
         if self.game.turn >= self.max_turns:
-            return None
+            raise Exception("Game did not finish in time.")
 
         self.games.append(self.game)
         return self.game.get_winner()
