@@ -109,6 +109,14 @@ class ChineseCheckersGame:
         """
         return _.some(self.players, lambda p: p.has_player_reached_target())
 
+    def get_winner(self) -> Player:
+        """
+        Returns the winner of the game.
+        Returns:
+            Player: The winner of the game.
+        """
+        return _.find(self.players, lambda p: p.has_player_reached_target())
+
     def update_printer_settings(self, print_size: int = 10, print_coordinates: bool = False):
         self.printer = Printer(print_size, print_coordinates)
 

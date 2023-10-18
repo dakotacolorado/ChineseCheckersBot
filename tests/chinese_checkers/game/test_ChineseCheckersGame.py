@@ -63,12 +63,19 @@ class TestChineseCheckersGame(TestCase):
         # verify
         self.assertFalse(game.is_game_won())
 
-    def test_is_game_not_won(self):
+    def test_is_game_won(self):
         game = ChineseCheckersGame.start_game()
         game.players[0].positions = game.players[0].target_positions
 
         # verify
         self.assertTrue(game.is_game_won())
+
+    def test_get_winner(self):
+        game = ChineseCheckersGame.start_game()
+        game.players[0].positions = game.players[0].target_positions
+
+        # verify
+        self.assertTrue(game.get_winner() == game.players[0])
 
     def test_tensor(self):
         game = ChineseCheckersGame.start_game(4,4)
