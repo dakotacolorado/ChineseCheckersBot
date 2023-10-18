@@ -1,5 +1,7 @@
 from typing import List
 
+from torch import zeros_like, stack
+
 from ..game.ChineseCheckersGame import ChineseCheckersGame
 from ..model.IModel import IModel
 
@@ -55,4 +57,14 @@ class GameSimulation:
     def _print_game(self):
         if self.print_period and self.game.turn % self.print_period == 0:
             self.game.print()
+
+    def tensor(self, max_turns=400):
+        game_sequence_tensors = [game.tensor() for game in self.games]
+
+        padding_size = max_turns - len(self.games)
+        if padding_size > 0:
+            padding = [zeros_like(game_sequence_tensors[0])] * padding_size
+            game_sequence_tensors.extend(padding)
+
+        return stack(game_sequence_tensors)
 
