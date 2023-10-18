@@ -17,11 +17,11 @@ class TestGameSimulation(TestCase):
         """
         model_1 = CentroidModel()
         model_2 = CentroidModel()
-        games = GameSimulation([model_1, model_2], print_period=19, print_coordinates=True).simulate_game()
-        end_game = games[-1]
-        end_game.print()
-        print(f"Game Winner: {end_game.get_current_player()}")
-        self.assertTrue(end_game.is_game_won())
+        simulation = GameSimulation([model_1, model_2], print_period=19, print_coordinates=True)
+        winner = simulation.simulate_game()
+        simulation.game.print()
+        print(f"Game Winner: {winner}")
+        self.assertTrue(simulation.game.is_game_won())
 
     def test_tensor(self):
         # set up

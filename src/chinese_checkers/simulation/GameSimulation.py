@@ -3,6 +3,7 @@ from typing import List
 from torch import zeros_like, stack
 
 from ..game.ChineseCheckersGame import ChineseCheckersGame
+from ..game.Player import Player
 from ..model.IModel import IModel
 
 
@@ -36,7 +37,7 @@ class GameSimulation:
         self.models = models
         self.games = []
 
-    def simulate_game(self) -> List[ChineseCheckersGame]:
+    def simulate_game(self) -> Player:
         """
         Starts the game simulation.
 
@@ -52,7 +53,7 @@ class GameSimulation:
             return None
 
         self.games.append(self.game)
-        return self.games
+        return self.game.get_winner()
 
     def _print_game(self):
         if self.print_period and self.game.turn % self.print_period == 0:
