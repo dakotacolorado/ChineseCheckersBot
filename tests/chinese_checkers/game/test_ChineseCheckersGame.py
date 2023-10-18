@@ -1,5 +1,7 @@
 from unittest import TestCase
 
+from torch import tensor
+
 from src.chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
 
 
@@ -15,7 +17,6 @@ class TestChineseCheckersGame(TestCase):
         self.assertEqual(game1, game2)
 
     def test_game_equality_not_default_board(self):
-
         game1 = ChineseCheckersGame.start_game(number_of_players=6, board_size=10)
         game2 = ChineseCheckersGame.start_game(number_of_players=6, board_size=10)
         self.assertEqual(game1, game2)
@@ -69,4 +70,11 @@ class TestChineseCheckersGame(TestCase):
         # verify
         self.assertTrue(game.is_game_won())
 
-
+    def test_tensor(self):
+        game = ChineseCheckersGame.start_game(4,4)
+        for i, player in enumerate(game.players):
+            for j, position in enumerate(game.board.hexagram_points):
+                self.assertEqual(
+                    int(game.tensor()[i][j]),
+                    1 if position in player.positions else 0
+                )

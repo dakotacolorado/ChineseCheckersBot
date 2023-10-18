@@ -1,5 +1,7 @@
 from typing import List, Dict
 
+from torch import tensor
+
 from .GameRuleEngine import GameRuleEngine
 from .Move import Move
 from .Player import Player
@@ -115,3 +117,13 @@ class ChineseCheckersGame:
             self.board.hexagram_points,
             *[p.positions for p in self.players],
         )
+
+    def tensor(self):
+        all_positions = self.board.hexagram_points
+        return tensor([
+            [
+                1 if position in player.positions else 0
+                for position in all_positions
+            ]
+            for player in self.players
+        ])
