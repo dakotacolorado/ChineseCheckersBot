@@ -39,8 +39,9 @@ class DataCatalog:
         with h5py.File(dataset_path, 'r') as h5file:
             data = h5file['data'][:]
             labels = h5file['labels'][:]
+            description = h5file.attrs['description']
 
-        return SimulationDataSet(player_count, board_size, game_length, name, version, '', data, labels)
+        return SimulationDataSet(player_count, board_size, game_length, name, version, description, data, labels)
 
     def save_dataset(self, dataset: SimulationDataSet):
         """Save a dataset to the catalog."""
@@ -56,6 +57,8 @@ class DataCatalog:
         with h5py.File(dataset_path / self.FILENAME, 'w') as h5file:
             h5file.create_dataset('data', data=dataset.data)
             h5file.create_dataset('labels', data=dataset.labels)
+
+            h5file.attrs['description'] = dataset.description
 
     def _construct_path(
             self,
