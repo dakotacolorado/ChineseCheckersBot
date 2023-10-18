@@ -19,8 +19,10 @@ class GameSimulation:
 
         Args:
             models: models to play the game
+            max_turns: maximum number of turns to play
             board_size: size of the board
             print_period: period to print the game
+            print_coordinates: whether to add the coordinates to the printed board
         """
         self.max_turns = max_turns
         self.game = ChineseCheckersGame.start_game(
@@ -34,7 +36,7 @@ class GameSimulation:
 
     def simulate_game(self) -> List[ChineseCheckersGame]:
         """
-        Simulates a game between the given models.
+        Starts the game simulation.
 
         Returns:
             The winning game state, or None if the game was not won.
