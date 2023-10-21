@@ -1,7 +1,5 @@
 from unittest import TestCase
 
-from torch import tensor
-
 from src.chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
 
 

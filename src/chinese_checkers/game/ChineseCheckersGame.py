@@ -41,7 +41,7 @@ class ChineseCheckersGame:
                 hexagram.hexagram_corner_points[corner_index],
                 # opposite corner is the corner with the same index + 3 (mod 6)
                 hexagram.hexagram_corner_points[(corner_index + 3) % 6],
-                f"Player {corner_index}"
+                "{corner_index}"
             )
             for corner_index in starting_player_corners[number_of_players]
         ]
