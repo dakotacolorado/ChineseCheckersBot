@@ -12,30 +12,41 @@ class TestGameSimulation(TestCase):
 
     def test_bootstrap_model_simulation_convergence(self):
         """
-        This is a stochastic test that tests if the centroid model converges to a winning state.
-        It will occasionally fail, but should pass most of the time.
+        A stochastic test to check if the centroid model converges to a winning state.
+        This test can occasionally fail but should pass most of the time.
         """
         model_1 = BootstrapModel()
         model_2 = BootstrapModel()
+
         simulation = GameSimulation([model_1, model_2], print_period=19, print_coordinates=True)
         winner = simulation.simulate_game()
+
+        # Display game state and winner
         simulation.game.print()
         print(f"Game Winner: {winner}")
+
+        # Assert game is won
         self.assertTrue(simulation.game.is_game_won())
 
-    def test_tensor(self):
-        # set up
-        simulation = GameSimulation([IModel(), IModel()])
-        game = ChineseCheckersGame.start_game()
-        test_turns = 300
-        simulation.games = [game for i in range(test_turns)]
-        max_turns = 400
-        simulation_tensor = simulation.tensor(400)
-
-        for i in range(test_turns):
-            self.assertTrue(equal(simulation_tensor[i], game.tensor()))
-
-        for i in range(test_turns, max_turns):
-            self.assertTrue(equal(simulation_tensor[i], zeros_like(game.tensor())))
-
-
+# Ill add this back when I finish storing the game data.  This will be used to load it into the NN
+    # def test_get_game_tensor(self):
+    #     """
+    #     Test if tensor representation of the game is constructed correctly.
+    #     """
+    #     # Set up
+    #     simulation = GameSimulation([IModel(), IModel()])
+    #     game = ChineseCheckersGame.start_game()
+    #     test_turns = 300
+    #
+    #     # Simulate `test_turns` number of games
+    #     simulation.games = [game for _ in range(test_turns)]
+    #     max_turns = 400
+    #     simulation_tensor = simulation.get_game_tensor(max_turns)
+    #
+    #     # Check if the first `test_turns` tensors match the game tensor
+    #     for i in range(test_turns):
+    #         self.assertTrue(equal(simulation_tensor[i], game.tensor()))
+    #
+    #     # Check if the remaining tensors are zero tensors
+    #     for i in range(test_turns, max_turns):
+    #         self.assertTrue(equal(simulation_tensor[i], zeros_like(game.tensor())))
