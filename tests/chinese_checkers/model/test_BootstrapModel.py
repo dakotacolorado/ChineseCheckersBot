@@ -2,49 +2,15 @@ from typing import List
 from unittest import TestCase
 
 from src.chinese_checkers.game.Move import Move
-from src.chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
 from src.chinese_checkers.game.Player import Player
 from src.chinese_checkers.game.Position import Position
-from src.chinese_checkers.model.CentroidModel import CentroidModel
+from src.chinese_checkers.model.BootstrapModel import BootstrapModel
 
 
-class TestCentroidModel(TestCase):
+class TestBootstrapModel(TestCase):
 
     def setUp(self) -> None:
-        self.model = CentroidModel()
-
-    def test_calculate_centroid_at_zero(self):
-        positions = [
-            Position(0, 0),
-            Position(1, 0),
-            Position(0, 1),
-            Position(1, 1),
-            Position(-1, -1),
-            Position(-1, 0),
-            Position(0, -1),
-        ]
-
-        centroid = CentroidModel._calculate_centroid(positions)
-
-        self.assertEqual(centroid, Position(0, 0))
-
-    def test_calculate_centroid_at_non_zero(self):
-        positions = [
-            Position(1, 1),
-            Position(2, 2),
-            Position(3, 3)
-        ]
-
-        centroid = CentroidModel._calculate_centroid(positions)
-
-        self.assertEqual(centroid, Position(2, 2))
-
-    def test_calculate_centroid_no_positions(self):
-        positions = []
-
-        centroid = CentroidModel._calculate_centroid(positions)
-
-        self.assertIsNone(centroid)
+        self.model = BootstrapModel()
 
     def test_chose_next_move(self):
         current_player = Player([], [], 'Player 1')
@@ -72,7 +38,7 @@ class TestCentroidModel(TestCase):
         current_player = Player([position], [target_position], 'Player 1')
         other_players = []
 
-        moves = TestCentroidModel._unit_moves_for_position(position)
+        moves = TestBootstrapModel._unit_moves_for_position(position)
 
         next_move = self.model._chose_next_move(current_player, other_players, moves)
 
@@ -88,7 +54,7 @@ class TestCentroidModel(TestCase):
         other_players = []
 
         moves = [
-            *TestCentroidModel._unit_moves_for_position(position),
+            *TestBootstrapModel._unit_moves_for_position(position),
             expected_move
         ]
 

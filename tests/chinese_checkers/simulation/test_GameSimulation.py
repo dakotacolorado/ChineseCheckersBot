@@ -5,18 +5,18 @@ from torch import zeros_like, equal
 from src.chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
 from src.chinese_checkers.model.IModel import IModel
 from src.chinese_checkers.simulation.GameSimulation import GameSimulation
-from src.chinese_checkers.model.CentroidModel import CentroidModel
+from src.chinese_checkers.model.BootstrapModel import BootstrapModel
 
 
 class TestGameSimulation(TestCase):
 
-    def test_centroid_model_simulation_convergence(self):
+    def test_bootstrap_model_simulation_convergence(self):
         """
         This is a stochastic test that tests if the centroid model converges to a winning state.
         It will occasionally fail, but should pass most of the time.
         """
-        model_1 = CentroidModel()
-        model_2 = CentroidModel()
+        model_1 = BootstrapModel()
+        model_2 = BootstrapModel()
         simulation = GameSimulation([model_1, model_2], print_period=19, print_coordinates=True)
         winner = simulation.simulate_game()
         simulation.game.print()
