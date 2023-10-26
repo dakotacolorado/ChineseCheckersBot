@@ -28,8 +28,7 @@ class TestGameSimulation(TestCase):
         # Assert game is won
         self.assertTrue(simulation.game.is_game_won())
 
-# Ill add this back when I finish storing the game data.  This will be used to load it into the NN
-    # def test_get_game_tensor(self):
+b    # def test_get_game_tensor(self):
     #     """
     #     Test if tensor representation of the game is constructed correctly.
     #     """

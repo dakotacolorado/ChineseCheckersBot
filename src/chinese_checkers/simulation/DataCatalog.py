@@ -1,73 +1,66 @@
 from pathlib import Path
-from typing import List
-
+from typing import List, Optional
+import logging
 import h5py
+from .GameSimulationData import GameSimulationData, DirectoryAttributes, GameData
 
-from .SimulationDataSet import SimulationDataSet
+logger = logging.getLogger(__name__)
 
 
 class DataCatalog:
     """A class for managing datasets stored in a catalog."""
+    FILENAME = 'GameSimulationData.h5'
 
-    FILENAME = 'data.h5'
-
-    def __init__(self, catalog_dir: str):
+    def __init__(self, catalog_directory: str):
         """Initialize the catalog with the given directory."""
-        self.catalog_dir = Path(catalog_dir)
+        self.catalog_path = Path(catalog_directory)
+        self.catalog_path.mkdir(parents=True, exist_ok=True)
 
-    def list_datasets(self) -> List[dict]:
-        """Return a list of all datasets in the catalog."""
-        dataset_paths = list(self.catalog_dir.rglob(self.FILENAME))
-
-        def extract_metadata_from_path(dataset_path: Path) -> dict:
-            """Extract metadata from a given dataset path."""
-            return {key: value for key, value in [part.split('=') for part in dataset_path.parts if '=' in part]}
-
-        return [extract_metadata_from_path(path) for path in dataset_paths]
-
-    def get_dataset(
-            self,
-            player_count: int,
-            board_size: int,
-            game_length: int,
-            name: str,
-            version: str
-    ) -> SimulationDataSet:
-        """Retrieve a dataset from the catalog."""
-        dataset_path = self._construct_path(player_count, board_size, game_length, name, version) / self.FILENAME
-
-        with h5py.File(dataset_path, 'r') as h5file:
-            data = h5file['data'][:]
-            labels = h5file['labels'][:]
-            description = h5file.attrs['description']
-
-        return SimulationDataSet(player_count, board_size, game_length, name, version, description, data, labels)
-
-    def save_dataset(self, dataset: SimulationDataSet):
+    def save_dataset(self, dataset: GameSimulationData) -> None:
         """Save a dataset to the catalog."""
-        dataset_path = self._construct_path(
-            dataset.player_count,
-            dataset.board_size,
-            dataset.game_length,
-            dataset.name,
-            dataset.version
-        )
+        dataset_path = self._construct_path(dataset.directory)
         dataset_path.mkdir(parents=True, exist_ok=True)
 
         with h5py.File(dataset_path / self.FILENAME, 'w') as h5file:
-            h5file.create_dataset('data', data=dataset.data)
-            h5file.create_dataset('labels', data=dataset.labels)
+            h5file.create_dataset('GameData', data=dataset.data)
 
-            h5file.attrs['description'] = dataset.description
-
-    def _construct_path(
-            self,
-            player_count: int,
-            board_size: int,
-            game_length: int,
-            name: str,
-            version: str
-    ) -> Path:
+    def _construct_path(self, directory: DirectoryAttributes) -> Path:
         """Construct the file path for a dataset based on its attributes."""
-        return (self.catalog_dir / f'player_count={player_count}' / f'board_size={board_size}'
-                / f'game_length={game_length}' / f'name={name}' / f'version={version}')
+        return self.catalog_path.joinpath(
+            f'player_count={directory.player_count}',
+            f'board_size={directory.board_size}',
+            f'max_game_length={directory.max_game_length}',
+            f'winning_player={directory.winning_player}',
+            f'name={directory.name}',
+            f'version={directory.version}',
+        )
+
+    def list_datasets(self) -> List[DirectoryAttributes]:
+        """Return a list of all datasets in the catalog."""
+        dataset_paths = list(self.catalog_path.rglob(self.FILENAME))
+        return [self.extract_metadata_from_path(path) for path in dataset_paths]
+
+    @staticmethod
+    def extract_metadata_from_path(dataset_path: Path) -> DirectoryAttributes:
+        """Extract metadata from a given dataset path."""
+        try:
+            return DirectoryAttributes(
+                part.split('=')[1]
+                for part in dataset_path.parts
+                if '=' in part
+            )
+        except IndexError as e:
+            logger.error(f"Failed to extract metadata from path {dataset_path}: {e}")
+            raise
+
+    def get_dataset(self, directory: DirectoryAttributes) -> Optional[GameSimulationData]:
+        """Retrieve a dataset from the catalog."""
+        dataset_path = self._construct_path(directory) / self.FILENAME
+        if not dataset_path.is_file():
+            logger.error(f"Dataset file {dataset_path} does not exist.")
+            return None
+
+        with h5py.File(dataset_path, 'r') as h5file:
+            data = GameData(h5file['GameData'][:])
+        return GameSimulationData(directory, data)
+
