@@ -27,20 +27,13 @@ class GameSimulation:
             print_period (int): Interval specifying how often the game state is printed.
             print_coordinates (bool): If True, game prints will include coordinates.
         """
-        self.max_turns = max_turns
-        self.game = ChineseCheckersGame.start_game(
-            number_of_players=len(models), board_size=board_size
-        )
-        self.print_period = print_period
+        self.max_turns: int = max_turns
+        self.game: ChineseCheckersGame = ChineseCheckersGame.start_game(
+            number_of_players=len(models), board_size=board_size)
+        self.print_period: int = print_period
         self.game.update_printer_settings(print_coordinates=print_coordinates)
-        self._print_initial_game_state()
-        self.models = models
-        self.game_state_history = []  # Records the state of players after every turn.
-
-    def _print_initial_game_state(self):
-        """Print the initial state of the game."""
-        if self.print_period:
-            self.game.print()
+        self.models: List[IModel] = models
+        self.game_state_history: List[Player] = []  # Records the state of players after every turn.
 
     def simulate_game(self) -> Player:
         """
