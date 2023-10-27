@@ -70,3 +70,16 @@ class TestMove(TestCase):
         # Adding move3 should increase the set size
         s.add(move3)
         self.assertEqual(len(s), 2)
+
+    def test_to_tuple(self):
+        pos = Position(1, 2)
+        move = Move(1, 1, pos)
+        expected_tuple = ((1, 1), (1, 2))
+        self.assertEqual(expected_tuple, move.to_tuple())
+
+    def test_from_tuple(self):
+        pos = Position(1, 2)
+        move = Move(1, 1, pos)
+        expected_tuple = ((1, 1), (1, 2))
+        self.assertEqual(expected_tuple, move.to_tuple())
+        self.assertEqual(move, Move.from_tuple(expected_tuple))
