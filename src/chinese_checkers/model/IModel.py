@@ -23,9 +23,9 @@ class IModel:
         """
         pass
 
-    def make_move(self, game: ChineseCheckersGame) -> ChineseCheckersGame:
-        moves = game.get_next_moves()
-        current_player = game.get_current_player()
-        other_players = game.get_other_players()
-        move = self._chose_next_move(current_player, other_players, moves)
-        return game.apply_move(move)
+    def make_move(self, game: ChineseCheckersGame) -> (ChineseCheckersGame, Move):
+        moves: List[Move] = game.get_next_moves()
+        current_player: Player = game.get_current_player()
+        other_players: Player = game.get_other_players()
+        move: Move = self._chose_next_move(current_player, other_players, moves)
+        return game.apply_move(move), move
