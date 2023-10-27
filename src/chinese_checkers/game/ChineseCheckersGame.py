@@ -41,7 +41,7 @@ class ChineseCheckersGame:
                 hexagram.hexagram_corner_points[corner_index],
                 # opposite corner is the corner with the same index + 3 (mod 6)
                 hexagram.hexagram_corner_points[(corner_index + 3) % 6],
-                "{corner_index}"
+                str(corner_index)
             )
             for corner_index in starting_player_corners[number_of_players]
         ]
@@ -125,13 +125,3 @@ class ChineseCheckersGame:
             self.board.hexagram_points,
             *[p.positions for p in self.players],
         )
-
-    def tensor(self):
-        all_positions = self.board.hexagram_points
-        return tensor([
-            [
-                1 if position in player.positions else 0
-                for position in all_positions
-            ]
-            for player in self.players
-        ])
