@@ -1,12 +1,11 @@
 from typing import List, Dict
 
-from torch import tensor
-
 from .GameRuleEngine import GameRuleEngine
 from .Move import Move
 from .Player import Player
 import pydash as _
 
+from .Position import Position
 from ..geometry.Hexagram import Hexagram
 from ..geometry.Printer import Printer
 
@@ -38,9 +37,9 @@ class ChineseCheckersGame:
         # Create a player for each starting corner.
         players = [
             Player(
-                hexagram.hexagram_corner_points[corner_index],
+                [Position(v.i, v.j) for v in hexagram.hexagram_corner_points[corner_index]],
                 # opposite corner is the corner with the same index + 3 (mod 6)
-                hexagram.hexagram_corner_points[(corner_index + 3) % 6],
+                [Position(v.i, v.j) for v in hexagram.hexagram_corner_points[(corner_index + 3) % 6]],
                 str(corner_index)
             )
             for corner_index in starting_player_corners[number_of_players]

@@ -8,7 +8,7 @@ class Position(Vector):
         self.i = i
         self.j = j
 
-    def to_tuple(self):
+    def to_tuple(self) -> Tuple[int, int]:
         return self.i, self.j
 
     @staticmethod
