@@ -22,15 +22,17 @@ class TestGamePositions(unittest.TestCase):
     def setUp(self):
         self.game_positions = GamePositions(
             player_ids=["P1", "P2"],
-            player_target_positions=[(1, 2), (3, 4)],
-            player_historical_positions=[[(1, 2), (2, 3)], [(3, 4), (4, 5)]]
+            player_start_positions=[[(0, 1), (0, 2)], [(2, 3), (2, 4)]],
+            player_target_positions=[[(1, 2), (1, 3)], [(3, 4), (3, 5)]],
+            historical_moves=[((0, 1), (1, 2)), ((2, 3), (3, 4))]
         )
 
     def test_to_storable(self):
         storable = GamePositions.to_storable(self.game_positions)
         self.assertTrue(isinstance(storable["player_ids"], np.ndarray))
+        self.assertTrue(isinstance(storable["player_start_positions"], np.ndarray))
         self.assertTrue(isinstance(storable["player_target_positions"], np.ndarray))
-        self.assertTrue(isinstance(storable["player_historical_positions"], np.ndarray))
+        self.assertTrue(isinstance(storable["historical_moves"], np.ndarray))
 
     def test_from_storable(self):
         storable = GamePositions.to_storable(self.game_positions)
@@ -45,8 +47,9 @@ class TestGameSimulationData(unittest.TestCase):
                                      winning_player="Player1", name="TestGame", version="1.0")
         self.game_positions = GamePositions(
             player_ids=["P1", "P2"],
-            player_target_positions=[(1, 2), (3, 4)],
-            player_historical_positions=[[(1, 2), (2, 3)], [(3, 4), (4, 5)]]
+            player_start_positions=[[(0, 1), (0, 2)], [(2, 3), (2, 4)]],
+            player_target_positions=[[(1, 2), (1, 3)], [(3, 4), (3, 5)]],
+            historical_moves=[((0, 1), (1, 2)), ((2, 3), (3, 4))]
         )
         self.simulation_data = GameSimulationData(metadata=self.metadata, positions=self.game_positions)
 

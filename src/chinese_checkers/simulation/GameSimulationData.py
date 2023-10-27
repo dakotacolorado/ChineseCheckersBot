@@ -3,7 +3,9 @@ from typing import List, Tuple
 
 import numpy as np
 
-from ..game import Player
+from src.chinese_checkers.game.Move import Move
+from src.chinese_checkers.game.Position import Position
+
 
 @dataclass
 class GameMetadata:
@@ -15,36 +17,47 @@ class GameMetadata:
     name: str
     version: str
 
+
 @dataclass
 class GamePositions:
     """Data related to player positions in the game."""
     player_ids: List[str]
-    player_target_positions: List[List[Tuple[int, int]]]
-    player_historical_positions: List[List[List[Tuple[int, int]]]]
+    player_start_positions: List[List[Position]]
+    player_target_positions: List[List[Position]]
+    historical_moves: List[Move]
 
-    @staticmethod
-    def to_storable(game_positions: "GamePositions") -> dict:
+    def to_storable(self: "GamePositions") -> dict:
         """Converts the object to a format suitable for h5py storage."""
         return {
-            "player_ids": np.array(game_positions.player_ids, dtype="S"),  # Convert to byte strings for h5py
-            "player_target_positions": np.array(game_positions.player_target_positions),
-            "player_historical_positions": np.array(game_positions.player_historical_positions),
+            "player_ids": np.array(self.player_ids, dtype="S"),  # Convert to byte strings for h5py
+            "player_start_positions": np.array(
+                [[pos.to_tuple() for pos in sublist] for sublist in self.player_start_positions]
+            ),
+            "player_target_positions": np.array(
+                [[pos.to_tuple() for pos in sublist] for sublist in self.player_target_positions]
+            ),
+            "historical_moves": np.array([move.to_tuple() for move in self.historical_moves])
         }
 
     @staticmethod
     def from_storable(data: dict) -> "GamePositions":
         """Creates a GamePositions object from stored h5py data."""
         player_ids = [pid.decode() for pid in data["player_ids"]]
-
-        player_target_positions = [tuple(position) for position in data["player_target_positions"].tolist()]
-        player_historical_positions = [[tuple(position) for position in pos_list] for pos_list in
-                                       data["player_historical_positions"].tolist()]
+        player_start_positions = [
+            [Position.from_tuple(tuple(pos)) for pos in sublist] for sublist in data["player_start_positions"].tolist()
+        ]
+        player_target_positions = [
+            [Position.from_tuple(tuple(pos)) for pos in sublist] for sublist in data["player_target_positions"].tolist()
+        ]
+        historical_moves = [Move.from_tuple(tuple(move)) for move in data["historical_moves"].tolist()]
 
         return GamePositions(
             player_ids=player_ids,
+            player_start_positions=player_start_positions,
             player_target_positions=player_target_positions,
-            player_historical_positions=player_historical_positions
+            historical_moves=historical_moves
         )
+
 
 @dataclass
 class GameSimulationData:
