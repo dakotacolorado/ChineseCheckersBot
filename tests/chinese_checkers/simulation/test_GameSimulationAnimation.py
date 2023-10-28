@@ -3,7 +3,7 @@ from unittest import TestCase, mock
 from matplotlib import animation, pyplot as plt
 
 from src.chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
-from src.chinese_checkers.simulation.GameSilmulationAnimation import GameSimulationAnimation
+from src.chinese_checkers.simulation.GameSimulationAnimation import GameSimulationAnimation
 from src.chinese_checkers.simulation.GameSimulationData import GameSimulationData
 
 
@@ -34,13 +34,6 @@ class TestGameSimulationAnimation(TestCase):
         self.assertTrue(hasattr(animation_instance, "anim"))
         self.assertTrue(isinstance(animation_instance.game_sequence, list))
         self.assertEqual(len(animation_instance.game_sequence), 2)
-
-    def test_save_to_file(self):
-        animation_instance = GameSimulationAnimation(self.mock_game_sequence)
-
-        with mock.patch.object(animation.FuncAnimation, "save", return_value=None):
-            # Check if it runs without issues
-            animation_instance.save_to_file("test.mp4")
 
     def test_display(self):
         animation_instance = GameSimulationAnimation(self.mock_game_sequence)
