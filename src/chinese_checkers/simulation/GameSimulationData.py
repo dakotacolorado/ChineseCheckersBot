@@ -1,10 +1,13 @@
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List
 
 import numpy as np
 
-from chinese_checkers.game.Move import Move
-from chinese_checkers.game.Position import Position
+from ..game.ChineseCheckersGame import ChineseCheckersGame
+from ..game.Move import Move
+from ..game.Player import Player
+from ..game.Position import Position
+from ..geometry.Hexagram import Hexagram
 
 
 @dataclass
@@ -63,3 +66,23 @@ class GamePositions:
 class GameSimulationData:
     metadata: GameMetadata
     positions: GamePositions
+
+    @staticmethod
+    def to_game_sequence(data: "GameSimulationData") -> List[ChineseCheckersGame]:
+        """Converts the simulation data to a list of (position, move) tuples."""
+        players: List[Player] = [
+            Player(start_positions, target_positions, player_id)
+            for player_id, start_positions, target_positions
+            in zip(data.positions.player_ids, data.positions.player_start_positions,
+                   data.positions.player_target_positions)
+        ]
+
+        game = ChineseCheckersGame(players, board=Hexagram(data.metadata.board_size))
+        game_sequence = [game]
+
+        for move_tuple in data.positions.historical_moves:
+            move: Move = Move.from_tuple(move_tuple)  # Convert tuple to Move object
+            game: ChineseCheckersGame = game.apply_move(move)
+            game_sequence.append(game)
+
+        return game_sequence

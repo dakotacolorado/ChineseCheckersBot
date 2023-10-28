@@ -1,6 +1,10 @@
 import unittest
 import numpy as np
 
+from src.chinese_checkers.game.Move import Move
+from src.chinese_checkers.geometry.Hexagram import Hexagram
+from src.chinese_checkers.game.Player import Player
+from src.chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
 from src.chinese_checkers.simulation.GameSimulationData import GamePositions, GameMetadata, GameSimulationData
 
 
@@ -56,3 +60,26 @@ class TestGameSimulationData(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.simulation_data.metadata, self.metadata)
         self.assertEqual(self.simulation_data.positions, self.game_positions)
+
+    def test_to_game_sequence(self):
+        game_sequence = GameSimulationData.to_game_sequence(self.simulation_data)
+
+        self.assertEqual(len(game_sequence), len(self.game_positions.historical_moves) + 1)
+        expected_players = [
+            Player(start_positions, target_positions, player_id)
+            for player_id, start_positions, target_positions
+            in zip(self.simulation_data.positions.player_ids,
+                   self.simulation_data.positions.player_start_positions,
+                   self.simulation_data.positions.player_target_positions)
+        ]
+
+        initial_game = ChineseCheckersGame(
+            expected_players, board=Hexagram(self.simulation_data.metadata.board_size))
+
+        self.assertEqual(game_sequence[0], initial_game)
+
+        current_game = initial_game
+        for idx, move in enumerate(self.game_positions.historical_moves):
+            move: Move = Move.from_tuple(move)
+            current_game = current_game.apply_move(move)
+            self.assertEqual(game_sequence[idx + 1], current_game)
