@@ -1,5 +1,7 @@
 from typing import List, Dict
 
+import matplotlib.pyplot as plt
+
 from .GameRuleEngine import GameRuleEngine
 from .Move import Move
 from .Player import Player
@@ -116,11 +118,12 @@ class ChineseCheckersGame:
         """
         return _.find(self.players, lambda p: p.has_player_reached_target())
 
-    def update_printer_settings(self, print_size: int = 10, print_coordinates: bool = False):
-        self.printer = Printer(print_size, print_coordinates)
+    def update_printer_settings(self, **printer_settings):
+        self.printer = Printer(**printer_settings)
 
-    def print(self):
-        self.printer.print_grid(
+    def print(self, **print_settings):
+        self.printer.print(
             self.board.hexagram_points,
             *[p.positions for p in self.players],
+            **print_settings
         )
