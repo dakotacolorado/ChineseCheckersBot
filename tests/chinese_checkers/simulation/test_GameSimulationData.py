@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 
+from src.chinese_checkers.game.Position import Position
 from src.chinese_checkers.game.Move import Move
 from src.chinese_checkers.geometry.Hexagram import Hexagram
 from src.chinese_checkers.game.Player import Player
@@ -51,9 +52,9 @@ class TestGameSimulationData(unittest.TestCase):
                                      winning_player="Player1", name="TestGame", version="1.0")
         self.game_positions = GamePositions(
             player_ids=["P1", "P2"],
-            player_start_positions=[[(0, 1), (0, 2)], [(2, 3), (2, 4)]],
-            player_target_positions=[[(1, 2), (1, 3)], [(3, 4), (3, 5)]],
-            historical_moves=[((0, 1), (1, 2)), ((2, 3), (3, 4))]
+            player_start_positions=[[Position(0, 1), Position(0, 2)], [Position(2, 3), Position(2, 4)]],
+            player_target_positions=[[Position(1, 2), Position(1, 3)], [Position(3, 4), Position(3, 5)]],
+            historical_moves=[Move(0, 1, Position(1, 2)), Move(2, 3, Position(3, 4))]
         )
         self.simulation_data = GameSimulationData(metadata=self.metadata, positions=self.game_positions)
 
@@ -80,6 +81,5 @@ class TestGameSimulationData(unittest.TestCase):
 
         current_game = initial_game
         for idx, move in enumerate(self.game_positions.historical_moves):
-            move: Move = Move.from_tuple(move)
             current_game = current_game.apply_move(move)
             self.assertEqual(game_sequence[idx + 1], current_game)

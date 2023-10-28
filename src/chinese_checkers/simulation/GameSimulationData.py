@@ -80,8 +80,7 @@ class GameSimulationData:
         game = ChineseCheckersGame(players, board=Hexagram(data.metadata.board_size))
         game_sequence = [game]
 
-        for move_tuple in data.positions.historical_moves:
-            move: Move = Move.from_tuple(move_tuple)  # Convert tuple to Move object
+        for move in data.positions.historical_moves:
             game: ChineseCheckersGame = game.apply_move(move)
             game_sequence.append(game)
 
