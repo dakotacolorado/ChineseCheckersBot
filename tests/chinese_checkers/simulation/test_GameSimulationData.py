@@ -1,4 +1,6 @@
 import unittest
+from pathlib import Path
+
 import numpy as np
 
 from src.chinese_checkers.game.Position import Position
@@ -21,6 +23,12 @@ class TestGameMetadata(unittest.TestCase):
         self.assertEqual(metadata.name, "TestGame")
         self.assertEqual(metadata.version, "1.0")
 
+    def test_to_path(self):
+        metadata = GameMetadata(player_count=2, board_size=4, max_game_length=10,
+                                winning_player="Player1", name="TestGame", version="1.0")
+        expected_path = Path("player_count=2", "board_size=4", "max_game_length=10",
+                             "winning_player=Player1", "name=TestGame", "version=1.0")
+        self.assertEqual(metadata.to_path(), expected_path)
 
 class TestGamePositions(unittest.TestCase):
 
@@ -63,7 +71,7 @@ class TestGameSimulationData(unittest.TestCase):
         self.assertEqual(self.simulation_data.positions, self.game_positions)
 
     def test_to_game_sequence(self):
-        game_sequence = GameSimulationData.to_game_sequence(self.simulation_data)
+        game_sequence = self.simulation_data.to_game_sequence()
 
         self.assertEqual(len(game_sequence), len(self.game_positions.historical_moves) + 1)
         expected_players = [

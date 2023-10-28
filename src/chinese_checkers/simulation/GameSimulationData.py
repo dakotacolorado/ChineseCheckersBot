@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List
 
 import numpy as np
@@ -19,6 +20,17 @@ class GameMetadata:
     winning_player: str
     name: str
     version: str
+
+    def to_path(self: "GameMetadata") -> Path:
+        return Path(
+            f'player_count={self.player_count}',
+            f'board_size={self.board_size}',
+            f'max_game_length={self.max_game_length}',
+            f'winning_player={self.winning_player}',
+            f'name={self.name}',
+            f'version={self.version}'
+        )
+
 
 
 @dataclass
@@ -67,20 +79,19 @@ class GameSimulationData:
     metadata: GameMetadata
     positions: GamePositions
 
-    @staticmethod
-    def to_game_sequence(data: "GameSimulationData") -> List[ChineseCheckersGame]:
+    def to_game_sequence(self) -> List[ChineseCheckersGame]:
         """Converts the simulation data to a list of (position, move) tuples."""
         players: List[Player] = [
             Player(start_positions, target_positions, player_id)
             for player_id, start_positions, target_positions
-            in zip(data.positions.player_ids, data.positions.player_start_positions,
-                   data.positions.player_target_positions)
+            in zip(self.positions.player_ids, self.positions.player_start_positions,
+                   self.positions.player_target_positions)
         ]
 
-        game = ChineseCheckersGame(players, board=Hexagram(data.metadata.board_size))
+        game = ChineseCheckersGame(players, board=Hexagram(self.metadata.board_size))
         game_sequence = [game]
 
-        for move in data.positions.historical_moves:
+        for move in self.positions.historical_moves:
             game: ChineseCheckersGame = game.apply_move(move)
             game_sequence.append(game)
 

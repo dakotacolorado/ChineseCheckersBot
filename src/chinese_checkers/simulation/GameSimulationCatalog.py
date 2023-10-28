@@ -17,15 +17,7 @@ class GameSimulationCatalog:
         logger.info(f"Initialized GameSimulationCatalog at {self.catalog_path}")
 
     def _construct_path(self, metadata: GameMetadata) -> Path:
-        return self.catalog_path.joinpath(
-            f'player_count={metadata.player_count}',
-            f'board_size={metadata.board_size}',
-            f'max_game_length={metadata.max_game_length}',
-            f'winning_player={metadata.winning_player}',
-            f'name={metadata.name}',
-            f'version={metadata.version}',
-            self.FILENAME
-        )
+        return self.catalog_path.joinpath(metadata.to_path(), self.FILENAME)
 
     def save_simulation(self, simulation: GameSimulationData) -> None:
         file_path = self._construct_path(simulation.metadata)
@@ -93,10 +85,10 @@ class GameSimulationCatalog:
         configurations that are stored.
         """
         dataset_paths = list(self.catalog_path.rglob(self.FILENAME))
-        return [self.extract_metadata_from_path(path.parent) for path in dataset_paths]
+        return [self._extract_metadata_from_path(path.parent) for path in dataset_paths]
 
     @staticmethod
-    def extract_metadata_from_path(directory_path: Path) -> GameMetadata:
+    def _extract_metadata_from_path(directory_path: Path) -> GameMetadata:
         try:
             parts = {part.split('=')[0]: part.split('=')[1] for part in directory_path.parts if '=' in part}
             return GameMetadata(
