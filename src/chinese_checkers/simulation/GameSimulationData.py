@@ -3,8 +3,8 @@ from typing import List, Tuple
 
 import numpy as np
 
-from src.chinese_checkers.game.Move import Move
-from src.chinese_checkers.game.Position import Position
+from chinese_checkers.game.Move import Move
+from chinese_checkers.game.Position import Position
 
 
 @dataclass
