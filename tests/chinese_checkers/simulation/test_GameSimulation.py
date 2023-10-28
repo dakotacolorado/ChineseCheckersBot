@@ -17,7 +17,7 @@ class TestGameSimulation(TestCase):
         model_1 = BootstrapModel()
         model_2 = BootstrapModel()
 
-        simulation = GameSimulation([model_1, model_2], print_period=19, print_coordinates=True)
+        simulation = GameSimulation([model_1, model_2], print_period=19, show_coordinates=True)
         winner = simulation.simulate_game()
 
         # Display game state and winner

@@ -15,7 +15,7 @@ class GameSimulation:
             max_turns: int = 1000,
             board_size: int = 4,
             print_period: int = 0,
-            print_coordinates: bool = False
+            show_coordinates: bool = False
     ):
         """
         Initializes the game setup. The actual game progression (players making moves)
@@ -26,7 +26,7 @@ class GameSimulation:
             max_turns (int): Maximum allowable turns before the game is considered unfinished.
             board_size (int): Diameter of the board (measured by spaces or positions).
             print_period (int): Interval specifying how often the game state is printed.
-            print_coordinates (bool): If True, game prints will include coordinates.
+            show_coordinates (bool): If True, game prints will include coordinates.
         """
 
         # set up the game
@@ -37,7 +37,7 @@ class GameSimulation:
 
         # set up the printer
         self.print_period: int = print_period
-        self.game.update_printer_settings(print_coordinates=print_coordinates)
+        self.game.update_printer_settings(show_coordinates=show_coordinates)
 
         # initialize the game state history
         self.start_positions: List[Player] = self.game.players

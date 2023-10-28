@@ -27,9 +27,9 @@ class TestGamePositions(unittest.TestCase):
     def setUp(self):
         self.game_positions = GamePositions(
             player_ids=["P1", "P2"],
-            player_start_positions=[[(0, 1), (0, 2)], [(2, 3), (2, 4)]],
-            player_target_positions=[[(1, 2), (1, 3)], [(3, 4), (3, 5)]],
-            historical_moves=[((0, 1), (1, 2)), ((2, 3), (3, 4))]
+            player_start_positions=[[Position(0, 1), Position(0, 2)], [Position(2, 3), Position(2, 4)]],
+            player_target_positions=[[Position(1, 2), Position(1, 3)], [Position(3, 4), Position(3, 5)]],
+            historical_moves=[Move(0, 1, Position(0, 1)), Move(2, 3, Position(2, 3))]
         )
 
     def test_to_storable(self):
