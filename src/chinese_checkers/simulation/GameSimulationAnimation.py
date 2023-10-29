@@ -1,3 +1,5 @@
+import logging
+
 from tqdm import tqdm
 from IPython.core.display import HTML
 
@@ -25,16 +27,18 @@ class GameSimulationAnimation:
         self.game_sequence = game_sequence
         self.fig, self.ax = plt.subplots(1, figsize=(plot_size, plot_size), dpi=dpi)
         plt.close(self.fig)
-        self.anim: FuncAnimation = self._create_animation()
         self.pbar = tqdm(total=len(self.game_sequence), desc="Creating Animation")
+        self.anim: FuncAnimation = self._create_animation()
 
     def _create_animation(self) -> FuncAnimation:
-        return FuncAnimation(
+        animation = FuncAnimation(
             self.fig,
             self._update_plot,
             frames=len(self.game_sequence),
             repeat=False
         )
+        self.pbar.close()
+        return animation
 
     def _update_plot(self, i: int):
         game = self.game_sequence[i]
@@ -49,3 +53,4 @@ class GameSimulationAnimation:
     def save_to_file(self, file_path: str, fps: int = 30):
         writer = writers['ffmpeg'](fps=fps, bitrate=1800)
         self.anim.save(file_path, writer=writer)
+        logging.info(f"Saved animation to {file_path}")
