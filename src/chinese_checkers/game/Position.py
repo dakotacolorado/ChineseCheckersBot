@@ -12,5 +12,5 @@ class Position(Vector):
         return self.i, self.j
 
     @staticmethod
-    def from_tuple(tuple: Tuple[int, int]) -> "Position":
-        return Position(tuple[0], tuple[1])
+    def from_tuple(tpl: Tuple[int, int]) -> "Position":
+        return Position(tpl[0], tpl[1])

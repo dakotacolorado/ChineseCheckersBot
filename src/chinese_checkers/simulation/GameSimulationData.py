@@ -11,7 +11,7 @@ from ..game.Position import Position
 from ..geometry.Hexagram import Hexagram
 
 
-@dataclass
+@dataclass(frozen=True)
 class GameMetadata:
     """Metadata about the game simulation."""
     player_count: int
@@ -32,8 +32,7 @@ class GameMetadata:
         )
 
 
-
-@dataclass
+@dataclass(frozen=True)
 class GamePositions:
     """Data related to player positions in the game."""
     player_ids: List[str]
@@ -74,13 +73,13 @@ class GamePositions:
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class GameSimulationData:
     metadata: GameMetadata
     positions: GamePositions
 
     def to_game_sequence(self) -> List[ChineseCheckersGame]:
-        """Converts the simulation data to a list of (position, move) tuples."""
+        """Converts the simulation data to a list of ChineseCheckersGame objects."""
         players: List[Player] = [
             Player(start_positions, target_positions, player_id)
             for player_id, start_positions, target_positions

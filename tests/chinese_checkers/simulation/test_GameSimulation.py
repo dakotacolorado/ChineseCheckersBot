@@ -28,7 +28,7 @@ class TestGameSimulation(TestCase):
         self.assertTrue(simulation.game.is_game_won())
 
     @patch("src.chinese_checkers.simulation.GameSimulation.ChineseCheckersGame.start_game")
-    def test_export_simulation_data(self, mock_start_game: MagicMock):
+    def test_get_simulation_data(self, mock_start_game: MagicMock):
         # set up
         random_models = [BootstrapModel(), BootstrapModel()]
         random_max_turns = 100
@@ -46,12 +46,13 @@ class TestGameSimulation(TestCase):
         mock_game_instance.players = random_players
         mock_game_instance.board.radius = random_board_size
         mock_game_instance.get_winner.return_value.player_id = random_winning_player_id
+        mock_game_instance.update_printer_settings.return_value = mock_game_instance
 
         mock_start_game.return_value = mock_game_instance
 
         # exercise
         simulation = GameSimulation(random_models, random_max_turns, random_board_size)
-        simulation_data = simulation.export_simulation_data(random_name, random_version)
+        simulation_data = simulation.get_simulation_data(random_name, random_version)
 
         # verify
         self.assertEqual(simulation_data.metadata.player_count, len(random_players))

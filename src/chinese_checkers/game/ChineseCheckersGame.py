@@ -118,8 +118,13 @@ class ChineseCheckersGame:
         """
         return _.find(self.players, lambda p: p.has_player_reached_target())
 
-    def update_printer_settings(self, **printer_settings):
-        self.printer = Printer(**printer_settings)
+    def update_printer_settings(self, **printer_settings) -> "ChineseCheckersGame":
+        return ChineseCheckersGame(
+            self.players,
+            self.turn,
+            self.board,
+            Printer(**printer_settings)
+        )
 
     def print(self, **print_settings):
         self.printer.print(

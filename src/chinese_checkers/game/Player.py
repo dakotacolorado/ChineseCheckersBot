@@ -24,7 +24,7 @@ class Player:
     def __repr__(self):
         return f"Player({self.positions}, {self.target_positions}, {self.player_id})"
 
-    def apply_move(self, move: Move):
+    def apply_move(self, move: Move) -> "Player":
         return Player(
             [
                 move.apply() if position == move.position else position

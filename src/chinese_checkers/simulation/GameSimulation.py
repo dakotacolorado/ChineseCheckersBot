@@ -37,7 +37,7 @@ class GameSimulation:
 
         # set up the printer
         self.print_period: int = print_period
-        self.game.update_printer_settings(show_coordinates=show_coordinates)
+        self.game = self.game.update_printer_settings(show_coordinates=show_coordinates)
 
         # initialize the game state history
         self.start_positions: List[Player] = self.game.players
@@ -61,12 +61,7 @@ class GameSimulation:
 
         return self.game.get_winner()
 
-    def _print_game_state_if_required(self):
-        """Prints the current game state if the turn is a multiple of print_period."""
-        if self.print_period and self.game.turn % self.print_period == 0:
-            self.game.print()
-
-    def export_simulation_data(self, name: str, version: str) -> GameSimulationData:
+    def get_simulation_data(self, name: str, version: str) -> GameSimulationData:
         """
         Generate a record of the played game for storage purposes.
 
@@ -93,3 +88,8 @@ class GameSimulation:
         )
 
         return GameSimulationData(game_metadata, game_positions)
+
+    def _print_game_state_if_required(self):
+        """Prints the current game state if the turn is a multiple of print_period."""
+        if self.print_period and self.game.turn % self.print_period == 0:
+            self.game.print()

@@ -1,15 +1,17 @@
 from typing import List
+from abc import ABC, abstractmethod
 
 from ..game import Player
 from ..game.ChineseCheckersGame import ChineseCheckersGame
 from ..game.Move import Move
 
 
-class IModel:
+class IModel(ABC):
     """
     Interface for a model that can be used to play Chinese Checkers.
     """
 
+    @abstractmethod
     def _chose_next_move(self, current_player: Player, other_players: List[Player], moves: List[Move]) -> Move:
         """
         Chooses the next move to make.
