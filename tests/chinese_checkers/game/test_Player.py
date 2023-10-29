@@ -58,6 +58,12 @@ class TestPlayer(TestCase):
         # verify
         self.assertFalse(player1 == player2)
 
+    def test_hash(self):
+        player = Player([Position(1, 1)], [Position(2, 2)], "player1")
+
+        # verify
+        self.assertEqual(hash(player), hash((tuple(player.positions), player.player_id)))
+
     def test_repr(self):
         player = Player([Position(1, 1)], [Position(2, 2)], "player1")
 

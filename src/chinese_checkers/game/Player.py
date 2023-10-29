@@ -21,6 +21,9 @@ class Player:
             set(self.positions) == set(other.positions) and \
             set(self.target_positions) == set(other.target_positions)
 
+    def __hash__(self):
+        return hash((tuple(self.positions), self.player_id))
+
     def __repr__(self):
         return f"Player({self.positions}, {self.target_positions}, {self.player_id})"
 

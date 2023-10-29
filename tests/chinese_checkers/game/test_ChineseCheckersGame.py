@@ -41,6 +41,10 @@ class TestChineseCheckersGame(TestCase):
         game2 = ChineseCheckersGame.start_game(board_size=10)
         self.assertNotEqual(game1, game2)
 
+    def test_hash(self):
+        game = ChineseCheckersGame.start_game()
+        self.assertEqual(hash(game), hash((tuple(game.players), game.board.radius)))
+
     def test_current_player(self):
         game = ChineseCheckersGame.start_game()
         self.assertEqual(game.get_current_player(), game.players[0])

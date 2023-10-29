@@ -66,6 +66,9 @@ class ChineseCheckersGame:
             and self.turn == other.turn \
             and self.board == other.board
 
+    def __hash__(self):
+        return hash((tuple(self.players), self.board.radius))
+
     def apply_move(self, move: Move) -> 'ChineseCheckersGame':
         return ChineseCheckersGame(
             [
