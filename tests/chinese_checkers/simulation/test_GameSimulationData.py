@@ -27,7 +27,7 @@ class TestGameMetadata(unittest.TestCase):
         metadata = GameMetadata(player_count=2, board_size=4, max_game_length=10,
                                 winning_player="Player1", name="TestGame", version="1.0")
         expected_path = Path("player_count=2", "board_size=4", "max_game_length=10",
-                             "winning_player=Player1", "name=TestGame", "version=1.0")
+                             "name=TestGame", "version=1.0",  "winning_player=Player1")
         self.assertEqual(metadata.to_path(), expected_path)
 
 class TestGamePositions(unittest.TestCase):

@@ -26,9 +26,9 @@ class GameMetadata:
             f'player_count={self.player_count}',
             f'board_size={self.board_size}',
             f'max_game_length={self.max_game_length}',
-            f'winning_player={self.winning_player}',
             f'name={self.name}',
-            f'version={self.version}'
+            f'version={self.version}',
+            f'winning_player={self.winning_player}',
         )
 
 

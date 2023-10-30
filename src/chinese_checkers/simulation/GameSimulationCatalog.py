@@ -95,9 +95,9 @@ class GameSimulationCatalog:
                 player_count=int(parts['player_count']),
                 board_size=int(parts['board_size']),
                 max_game_length=int(parts['max_game_length']),
-                winning_player=parts['winning_player'],
                 name=parts['name'],
-                version=parts['version']
+                version=parts['version'],
+                winning_player=parts['winning_player'],
             )
         except IndexError as e:
             logger.error(f"Failed to extract metadata from path {directory_path}: {e}")
