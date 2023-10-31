@@ -3,8 +3,8 @@ import logging
 from tqdm import tqdm
 from IPython.core.display import HTML
 
+from .GameSimulation import GameSimulation
 from ..game.ChineseCheckersGame import ChineseCheckersGame
-from ..simulation.GameSimulationData import GameSimulationData
 
 from typing import List
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ from matplotlib.animation import FuncAnimation, writers
 class GameSimulationAnimation:
 
     @staticmethod
-    def from_simulation_data(game_simulation: GameSimulationData) -> "GameSimulationAnimation":
+    def from_simulation_data(game_simulation: GameSimulation) -> "GameSimulationAnimation":
         game_sequence = game_simulation.to_game_sequence()
         return GameSimulationAnimation(game_sequence)
 

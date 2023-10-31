@@ -1,28 +1,37 @@
+from dataclasses import dataclass
 from typing import List
 
-from .GameSimulationData import GameMetadata, GamePositions, GameSimulationData
+from .SimulationData import SimulationData
+from .SimulationMetadata import SimulationMetadata
 from ..game.ChineseCheckersGame import ChineseCheckersGame
 from ..game.Move import Move
 from ..game.Player import Player
 from ..model.IModel import IModel
+from ..geometry.Hexagram import Hexagram
 
 
+@dataclass(frozen=True)
 class GameSimulation:
+    metadata: SimulationMetadata
+    data: SimulationData
 
-    def __init__(
-            self,
+    @staticmethod
+    def simulate_game(
             models: List[IModel],
+            name: str,
+            version: str,
             max_turns: int = 1000,
             board_size: int = 4,
             print_period: int = 0,
-            show_coordinates: bool = False
-    ):
+            show_coordinates: bool = False,
+    ) -> "GameSimulation":
         """
-        Initializes the game setup. The actual game progression (players making moves)
-        starts only when the `simulate_game()` method is explicitly called.
+        Run the simulation where each model plays in turns until the game is won or max_turns is reached.
 
         Args:
             models (List[IModel]): Models that will take turns playing the game.
+            name (str): Descriptive name for the game simulation.
+            version (str): Version identifier for the game simulation.
             max_turns (int): Maximum allowable turns before the game is considered unfinished.
             board_size (int): Diameter of the board (measured by spaces or positions).
             print_period (int): Interval specifying how often the game state is printed.
@@ -30,66 +39,67 @@ class GameSimulation:
         """
 
         # set up the game
-        self.max_turns: int = max_turns
-        self.game: ChineseCheckersGame = ChineseCheckersGame.start_game(
-            number_of_players=len(models), board_size=board_size)
-        self.models: List[IModel] = models
+        game: ChineseCheckersGame = ChineseCheckersGame.start_game(
+            number_of_players=len(models),
+            board_size=board_size
+        ).update_printer_settings(
+            show_coordinates=show_coordinates
+        )
 
-        # set up the printer
-        self.print_period: int = print_period
-        self.game = self.game.update_printer_settings(show_coordinates=show_coordinates)
+        # run the simulation and record the moves
+        start_positions: List[Player] = game.players
+        move_history: List[Move] = []
 
-        # initialize the game state history
-        self.start_positions: List[Player] = self.game.players
-        self.move_history: List[Move] = []
+        while not game.is_game_won() and game.turn < max_turns:
+            current_model = models[game.turn % len(models)]
+            game, move = current_model.make_move(game)
+            GameSimulation._print_game_state_if_required(print_period, game)
+            move_history.append(move)
 
-    def simulate_game(self) -> Player:
-        """
-        Run the simulation where each model plays in turns until the game is won or max_turns is reached.
+            if game.turn >= max_turns:
+                raise Exception("Game did not finish within the maximum allowed turns.")
 
-        Returns:
-            Player: The winning player, or None if the game did not conclude.
-        """
-        while not self.game.is_game_won() and self.game.turn < self.max_turns:
-            current_model = self.models[self.game.turn % len(self.models)]
-            self.game, move = current_model.make_move(self.game)
-            self._print_game_state_if_required()
-            self.move_history.append(move)
-
-        if self.game.turn >= self.max_turns:
-            raise Exception("Game did not finish within the maximum allowed turns.")
-
-        return self.game.get_winner()
-
-    def get_simulation_data(self, name: str, version: str) -> GameSimulationData:
-        """
-        Generate a record of the played game for storage purposes.
-
-        Args:
-            name (str): Descriptive name for the game simulation.
-            version (str): Version identifier for the game simulation.
-
-        Returns:
-            GameSimulationData: Data structure encapsulating details of the played game.
-        """
-        game_metadata = GameMetadata(
-            len(self.game.players),
-            self.game.board.radius,
-            self.max_turns,
-            self.game.get_winner().player_id,
+        # format and return the simulation data
+        game_metadata = SimulationMetadata(
+            len(game.players),
+            game.board.radius,
+            max_turns,
+            game.get_winner().player_id,
             name,
             version
         )
-        game_positions = GamePositions(
-            [player.player_id for player in self.game.players],
-            [player.positions for player in self.start_positions],
-            [player.target_positions for player in self.game.players],
-            self.move_history
+        game_positions = SimulationData(
+            [player.player_id for player in game.players],
+            [player.positions for player in start_positions],
+            [player.target_positions for player in game.players],
+            move_history
         )
 
-        return GameSimulationData(game_metadata, game_positions)
+        return GameSimulation(game_metadata, game_positions)
 
-    def _print_game_state_if_required(self):
+    @staticmethod
+    def _print_game_state_if_required(print_period: int, game: ChineseCheckersGame):
         """Prints the current game state if the turn is a multiple of print_period."""
-        if self.print_period and self.game.turn % self.print_period == 0:
-            self.game.print()
+        if print_period and game.turn % print_period == 0:
+            game.print()
+
+    def to_game_sequence(self) -> List[ChineseCheckersGame]:
+        """Converts the simulation to a list of ChineseCheckersGame objects."""
+        players: List[Player] = [
+            Player(start_positions, target_positions, player_id)
+            for start_positions, target_positions, player_id
+            in zip(
+                self.data.player_start_positions,
+                self.data.player_target_positions,
+                self.data.player_ids,
+            )
+        ]
+
+        game = ChineseCheckersGame(players, board=Hexagram(self.metadata.board_size))
+        game_sequence = [game]
+
+        for move in self.data.historical_moves:
+            game: ChineseCheckersGame = game.apply_move(move)
+            game_sequence.append(game)
+
+        return game_sequence

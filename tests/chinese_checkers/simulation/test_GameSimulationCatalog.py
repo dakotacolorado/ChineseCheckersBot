@@ -4,7 +4,10 @@ import shutil
 
 from src.chinese_checkers.game.Move import Move
 from src.chinese_checkers.game.Position import Position
-from src.chinese_checkers.simulation.GameSimulationData import GameMetadata, GameSimulationData, GamePositions
+from src.chinese_checkers.simulation.GameSimulation import GameSimulation
+from src.chinese_checkers.simulation.SimulationData import SimulationData
+from src.chinese_checkers.simulation.SimulationMetadata import SimulationMetadata
+
 from src.chinese_checkers.simulation.GameSimulationCatalog import GameSimulationCatalog
 
 
@@ -15,8 +18,8 @@ class TestGameSimulationCatalog(unittest.TestCase):
         self.temp_dir = tempfile.mkdtemp()
         self.catalog = GameSimulationCatalog(self.temp_dir)
 
-        # Sample metadata and positions
-        self.sample_metadata = GameMetadata(
+        # Sample metadata and data
+        self.sample_metadata = SimulationMetadata(
             player_count=6,
             board_size=121,
             max_game_length=100,
@@ -25,7 +28,7 @@ class TestGameSimulationCatalog(unittest.TestCase):
             version="1.0"
         )
 
-        self.sample_positions = GamePositions(
+        self.sample_data = SimulationData(
             player_ids=["player1", "player2"],
             player_start_positions=[[Position(0, 0)], [Position(1, 1)]],
             player_target_positions=[[Position(5, 5)], [Position(6, 6)]],
@@ -38,7 +41,7 @@ class TestGameSimulationCatalog(unittest.TestCase):
 
     def test_save_and_load_simulation(self):
         # Save a simulation to the catalog
-        simulation = GameSimulationData(self.sample_metadata, self.sample_positions)
+        simulation = GameSimulation(self.sample_metadata, self.sample_data)
         self.catalog.save_simulation(simulation)
 
         # Load the saved simulation
@@ -49,14 +52,14 @@ class TestGameSimulationCatalog(unittest.TestCase):
 
         # Check if the loaded simulation matches the saved one
         self.assertEqual(loaded_simulations[0].metadata, self.sample_metadata)
-        self.assertEqual(loaded_simulations[0].positions, self.sample_positions)
+        self.assertEqual(loaded_simulations[0].data, self.sample_data)
 
     def test_list_available_metadata(self):
         # Initially, there should be no metadata
         self.assertEqual(self.catalog.list_available_metadata(), [])
 
         # Save a simulation
-        simulation = GameSimulationData(self.sample_metadata, self.sample_positions)
+        simulation = GameSimulation(self.sample_metadata, self.sample_data)
         self.catalog.save_simulation(simulation)
 
         # Check if the saved metadata is available
@@ -66,7 +69,7 @@ class TestGameSimulationCatalog(unittest.TestCase):
 
     def test_invalid_index_load(self):
         # Save a simulation
-        simulation = GameSimulationData(self.sample_metadata, self.sample_positions)
+        simulation = GameSimulation(self.sample_metadata, self.sample_data)
         self.catalog.save_simulation(simulation)
 
         # Try to load a simulation with an invalid index

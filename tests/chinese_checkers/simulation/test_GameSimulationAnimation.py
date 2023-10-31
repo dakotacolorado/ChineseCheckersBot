@@ -4,14 +4,14 @@ from matplotlib import animation, pyplot as plt
 
 from src.chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
 from src.chinese_checkers.simulation.GameSimulationAnimation import GameSimulationAnimation
-from src.chinese_checkers.simulation.GameSimulationData import GameSimulationData
+from src.chinese_checkers.simulation.GameSimulation import GameSimulation
 
 
 class TestGameSimulationAnimation(TestCase):
 
     def setUp(self):
-        # Mock some basic data for GameSimulationData
-        self.mock_game_simulation_data = mock.MagicMock(spec=GameSimulationData)
+        # Mock some basic data for GameSimulation
+        self.mock_game_simulation_data = mock.MagicMock(spec=GameSimulation)
         self.mock_game_sequence = [mock.MagicMock(spec=ChineseCheckersGame), mock.MagicMock(spec=ChineseCheckersGame)]
 
         # Mock the method to_game_sequence to return mock_game_sequence
