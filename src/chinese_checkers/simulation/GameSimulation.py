@@ -4,10 +4,8 @@ from typing import List
 from .SimulationData import SimulationData
 from .SimulationMetadata import SimulationMetadata
 from ..game.ChineseCheckersGame import ChineseCheckersGame
-from ..game.Move import Move
-from ..game.Player import Player
 from ..model.IModel import IModel
-from ..geometry.Hexagram import Hexagram
+import re
 
 
 @dataclass(frozen=True)
@@ -27,28 +25,46 @@ class GameSimulation:
     ) -> "GameSimulation":
         """
         Run the simulation where each model plays in turns until the game is won or max_turns is reached.
-
-        Args:
-            models (List[IModel]): Models that will take turns playing the game.
-            name (str): Descriptive name for the game simulation.
-            version (str): Version identifier for the game simulation.
-            max_turns (int): Maximum allowable turns before the game is considered unfinished.
-            board_size (int): Diameter of the board (measured by spaces or positions).
-            print_period (int): Interval specifying how often the game state is printed.
-            show_coordinates (bool): If True, game prints will include coordinates.
         """
+        GameSimulation._validate_input(models, name, version, max_turns, board_size, print_period)
 
-        # set up the game
-        game: ChineseCheckersGame = ChineseCheckersGame.start_game(
+        game = GameSimulation._setup_game(models, board_size, show_coordinates)
+        move_history = GameSimulation._run_game_simulation(game, models, max_turns, print_period)
+
+        return GameSimulation._construct_simulation_data(game, move_history, name, version, max_turns)
+
+    @staticmethod
+    def _validate_input(models, name, version, max_turns, board_size, print_period):
+        valid_lengths = [2, 3, 4, 6]
+        version_pattern = r"^\d+\.\d+$"
+        name_pattern = r"^[a-zA-Z0-9]+$"
+
+        if len(models) not in valid_lengths:
+            raise ValueError("Invalid number of models. Must be 2, 3, 4, or 6.")
+        if not re.match(version_pattern, version):
+            raise ValueError("Version must follow the '<major-version-int>.<minor-version-int>' template.")
+        if max_turns > 1000:
+            raise ValueError("Max turns cannot exceed 1000.")
+        if not re.match(name_pattern, name):
+            raise ValueError("Name can only contain letters and numbers.")
+        if print_period <= 0:
+            raise ValueError("Print period must be greater than 0.")
+        if board_size <= 1:
+            raise ValueError("Board size must be greater than 1.")
+
+    @staticmethod
+    def _setup_game(models, board_size, show_coordinates):
+        game = ChineseCheckersGame.start_game(
             number_of_players=len(models),
             board_size=board_size
         ).update_printer_settings(
             show_coordinates=show_coordinates
         )
+        return game
 
-        # run the simulation and record the moves
-        start_positions: List[Player] = game.players
-        move_history: List[Move] = []
+    @staticmethod
+    def _run_game_simulation(game, models, max_turns, print_period):
+        move_history = []
 
         while not game.is_game_won() and game.turn < max_turns:
             current_model = models[game.turn % len(models)]
@@ -56,15 +72,19 @@ class GameSimulation:
             GameSimulation._print_game_state_if_required(print_period, game)
             move_history.append(move)
 
-            if game.turn >= max_turns:
-                raise Exception("Game did not finish within the maximum allowed turns.")
+        if game.turn >= max_turns:
+            raise Exception("Game did not finish within the specified {} turns.".format(max_turns))
 
-        # format and return the simulation data
+        return move_history
+
+    @staticmethod
+    def _construct_simulation_data(game, move_history, name, version, max_turns):
+        start_positions = game.players
         game_metadata = SimulationMetadata(
             len(game.players),
             game.board.radius,
             max_turns,
-            game.get_winner().player_id,
+            game.get_winner().player_id if game.is_game_won() else None,
             name,
             version
         )
@@ -76,30 +96,3 @@ class GameSimulation:
         )
 
         return GameSimulation(game_metadata, game_positions)
-
-    @staticmethod
-    def _print_game_state_if_required(print_period: int, game: ChineseCheckersGame):
-        """Prints the current game state if the turn is a multiple of print_period."""
-        if print_period and game.turn % print_period == 0:
-            game.print()
-
-    def to_game_sequence(self) -> List[ChineseCheckersGame]:
-        """Converts the simulation to a list of ChineseCheckersGame objects."""
-        players: List[Player] = [
-            Player(start_positions, target_positions, player_id)
-            for start_positions, target_positions, player_id
-            in zip(
-                self.data.player_start_positions,
-                self.data.player_target_positions,
-                self.data.player_ids,
-            )
-        ]
-
-        game = ChineseCheckersGame(players, board=Hexagram(self.metadata.board_size))
-        game_sequence = [game]
-
-        for move in self.data.historical_moves:
-            game: ChineseCheckersGame = game.apply_move(move)
-            game_sequence.append(game)
-
-        return game_sequence
