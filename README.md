@@ -22,7 +22,7 @@ from chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
 game = ChineseCheckersGame.start_game(number_of_players=2, board_size=4)
 ```
 
-### Printing a Game: 
+#### Printing a Game: 
 ```python
 game.print(plot_size = 10, show_coordinates = True)
 ```
