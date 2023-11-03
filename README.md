@@ -53,7 +53,7 @@ See [Sample Animation on YouTube](https://www.youtube.com/shorts/5G_hqv_NYUs).
 game_simulation.display()
 
 # save to a file
-game_simulation.display(file_path="game_simulation_1.mp4")
+game_simulation.save(file_path="game_simulation_1.mp4")
 ```
 
 This feature helps in understanding the gameplay dynamics between different models and in visually validating the efficacy of a given model in the game.
