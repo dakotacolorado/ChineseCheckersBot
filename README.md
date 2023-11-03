@@ -1,6 +1,6 @@
 ## ChineseCheckersGameEngine
 
-The **ChineseCheckersGameEngine** is a Python-based game engine designed for the simulation of Chinese Checkers games between game models. 
+The **ChineseCheckersGameEngine** is a Python-based game engine designed to simulate and store games of Chinese Checkers between game models. 
 
 ### Features
 
