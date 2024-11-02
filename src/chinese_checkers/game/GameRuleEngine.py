@@ -18,10 +18,10 @@ class GameRuleEngine:
             other_players: List[Player],
             hexagram: Hexagram
     ):
-        self.board_positions = hexagram.hexagram_points
-        self.occupied_positions = [
-                                      pos for p in other_players for pos in p.positions
-                                  ] + current_player.positions
+        self.board_positions = set(hexagram.hexagram_points)  
+        self.occupied_positions = {
+            pos for p in other_players for pos in p.positions
+        } | set(current_player.positions)
         self.unit_moves = hexagram.hexagon_points
         self.current_player = current_player
 

@@ -23,10 +23,10 @@ class TestGameRuleEngine(TestCase):
 
     def test_occupied_positions_initialization(self):
         # set-up
-        current_player_positions = [Position(0, 1), Position(1, 1)]
+        current_player_positions = {Position(0, 1), Position(1, 1)}
         current_player = Player(current_player_positions, [], "player1")
 
-        opponent_positions = [Position(-1, 0), Position(-1, 1)]
+        opponent_positions = {Position(-1, 0), Position(-1, 1)}
         opponent_player = Player(opponent_positions, [], "player2")
 
         hexagram = Hexagram(5)
@@ -36,7 +36,7 @@ class TestGameRuleEngine(TestCase):
 
         # verify
         self.assertEqual(engine.occupied_positions,
-                         opponent_positions + current_player_positions)
+                         opponent_positions | current_player_positions)
 
     def test_unit_moves(self):
         # set-up
