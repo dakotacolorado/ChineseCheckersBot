@@ -8,16 +8,10 @@ from IPython.display import Image
 from matplotlib.animation import FuncAnimation, writers
 from tqdm import tqdm
 
-from . import GameSimulation
 from ..game.ChineseCheckersGame import ChineseCheckersGame
 
 
 class GameSimulationAnimation:
-
-    @classmethod
-    def from_simulation_data(cls, simulation_data: GameSimulation, plot_size: int = 100, dpi: int = 5):
-        game_sequence = simulation_data.to_game_sequence()
-        return cls(game_sequence, plot_size, dpi)
 
     def __init__(
             self,
@@ -67,7 +61,7 @@ class GameSimulationAnimation:
         self.pbar.update(1)
         return self.ax,
 
-    def display(self, fps: int = 10):
+    def display(self, fps: int = 10) -> Image:
         """Displays the animation as a GIF in Jupyter Notebook or JupyterLab."""
         writer = writers['pillow'](fps=fps)
         self.anim.save(self.temp_gif_path, writer=writer)

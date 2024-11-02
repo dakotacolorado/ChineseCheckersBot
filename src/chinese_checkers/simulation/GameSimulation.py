@@ -1,7 +1,9 @@
 import re
 from dataclasses import dataclass
 from typing import List
+from IPython.display import Image
 
+from .GameSimulationAnimation import GameSimulationAnimation
 from .SimulationData import SimulationData
 from .SimulationMetadata import SimulationMetadata
 from ..game.ChineseCheckersGame import ChineseCheckersGame
@@ -19,38 +21,6 @@ class GameSimulation:
 
     metadata: SimulationMetadata
     data: SimulationData
-
-    def to_game_sequence(self, sample_period: int = 1) -> List[ChineseCheckersGame]:
-        """Converts the simulation data into a sequence of game states.
-
-        Samples game states based on a specified period. Only frames where the frame
-        index is a multiple of the sample period are included in the sequence.
-
-        Args:
-            sample_period (int, optional): Interval at which frames are sampled. Defaults to 1.
-
-        Returns:
-            List[ChineseCheckersGame]: List of game states at sampled frames.
-        """
-        game = ChineseCheckersGame.start_game(
-            number_of_players=len(self.data.player_ids),
-            board_size=self.metadata.board_size
-        )
-
-        for player, start_positions in zip(game.players, self.data.player_start_positions):
-            player.positions = start_positions
-
-        game_sequence = [game]
-        current_turn = 0
-
-        for move in self.data.historical_moves:
-            game = game.apply_move(move)
-            current_turn += 1
-
-            if current_turn % sample_period == 0:
-                game_sequence.append(game)
-
-        return game_sequence
 
     @staticmethod
     def simulate_game(
@@ -197,3 +167,45 @@ class GameSimulation:
         )
 
         return GameSimulation(game_metadata, game_positions)
+
+    def _to_game_sequence(self, sample_period: int = 1) -> List[ChineseCheckersGame]:
+        """Converts the simulation data into a sequence of game states.
+
+        Samples game states based on a specified period. Only frames where the frame
+        index is a multiple of the sample period are included in the sequence.
+
+        Args:
+            sample_period (int, optional): Interval at which frames are sampled. Defaults to 1.
+
+        Returns:
+            List[ChineseCheckersGame]: List of game states at sampled frames.
+        """
+        game = ChineseCheckersGame.start_game(
+            number_of_players=len(self.data.player_ids),
+            board_size=self.metadata.board_size
+        )
+
+        for player, start_positions in zip(game.players, self.data.player_start_positions):
+            player.positions = start_positions
+
+        game_sequence = [game]
+        current_turn = 0
+
+        for move in self.data.historical_moves:
+            game = game.apply_move(move)
+            current_turn += 1
+
+            if current_turn % sample_period == 0:
+                game_sequence.append(game)
+
+        return game_sequence
+
+    def display(self, sample_period: int = 10) -> Image:
+        game_animation = GameSimulationAnimation(self._to_game_sequence(sample_period=sample_period))
+        return game_animation.display()
+
+    def save_animation(self, file_path: str = None, sample_period: int = 10, fps: int = 10):
+        if file_path is None:
+            file_path = f"{self.metadata.name}-{self.metadata.version}.mp4"
+        game_animation = GameSimulationAnimation(self._to_game_sequence(sample_period=sample_period))
+        game_animation.save_to_file(file_path=file_path, fps=fps)
