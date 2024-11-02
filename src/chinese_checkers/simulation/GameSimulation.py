@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from typing import List
 
@@ -5,7 +6,6 @@ from .SimulationData import SimulationData
 from .SimulationMetadata import SimulationMetadata
 from ..game.ChineseCheckersGame import ChineseCheckersGame
 from ..model.IModel import IModel
-import re
 
 
 @dataclass(frozen=True)
@@ -36,17 +36,18 @@ class GameSimulation:
     @staticmethod
     def _validate_input(models, name, version, max_turns, board_size, print_period):
         valid_lengths = [2, 3, 4, 6]
-        version_pattern = r"^\d+\.\d+$"
-        name_pattern = r"^[a-zA-Z0-9]+$"
+        version_pattern = r"^v\d+\.\d+\.\d+$"
+        name_pattern = r"^[a-zA-Z0-9_-]+$"
 
         if len(models) not in valid_lengths:
             raise ValueError("Invalid number of models. Must be 2, 3, 4, or 6.")
         if not re.match(version_pattern, version):
-            raise ValueError("Version must follow the '<major-version-int>.<minor-version-int>' template.")
+            raise ValueError(
+                "Version must follow the 'v<major-version-int>.<minor-version-int>.<patch-version-int>' template.")
         if max_turns > 1000:
             raise ValueError("Max turns cannot exceed 1000.")
         if not re.match(name_pattern, name):
-            raise ValueError("Name can only contain letters and numbers.")
+            raise ValueError("Name can only contain letters, numbers, underscores (_), and hyphens (-).")
         if print_period <= 0:
             raise ValueError("Print period must be greater than 0.")
         if board_size <= 1:
@@ -69,7 +70,6 @@ class GameSimulation:
         while not game.is_game_won() and game.turn < max_turns:
             current_model = models[game.turn % len(models)]
             game, move = current_model.make_move(game)
-            GameSimulation._print_game_state_if_required(print_period, game)
             move_history.append(move)
 
         if game.turn >= max_turns:
