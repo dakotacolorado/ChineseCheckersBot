@@ -1,44 +1,100 @@
-from unittest import TestCase, mock
-
-from matplotlib import animation, pyplot as plt
-
+from unittest import TestCase
 from src.chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
-from src.chinese_checkers.simulation.GameSimulationAnimation import GameSimulationAnimation
-from src.chinese_checkers.simulation.GameSimulation import GameSimulation
 
 
-class TestGameSimulationAnimation(TestCase):
+class TestChineseCheckersGame(TestCase):
 
-    def setUp(self):
-        # Mock some basic data for GameSimulation
-        self.mock_game_simulation_data = mock.MagicMock(spec=GameSimulation)
-        self.mock_game_sequence = [mock.MagicMock(spec=ChineseCheckersGame), mock.MagicMock(spec=ChineseCheckersGame)]
+    def test_default_start_turn(self):
+        game = ChineseCheckersGame.start_game()
+        self.assertEqual(game.turn, 0)
 
-        # Mock the method to_game_sequence to return mock_game_sequence
-        self.mock_game_simulation_data.to_game_sequence.return_value = self.mock_game_sequence
+    def test_game_equality_default_board(self):
+        game1 = ChineseCheckersGame.start_game()
+        game2 = ChineseCheckersGame.start_game()
+        self.assertEqual(game1, game2)
 
-        self.mock_game_simulation_data.positions = mock.MagicMock()
-        self.mock_game_simulation_data.positions.player_ids = ["player1", "player2"]
-        self.mock_game_simulation_data.positions.player_start_positions = ["start1", "start2"]
-        self.mock_game_simulation_data.positions.player_target_positions = ["target1", "target2"]
-        self.mock_game_simulation_data.positions.historical_moves = [("move1", "move2")]
+    def test_game_equality_not_default_board(self):
+        game1 = ChineseCheckersGame.start_game(number_of_players=6, board_size=10)
+        game2 = ChineseCheckersGame.start_game(number_of_players=6, board_size=10)
+        self.assertEqual(game1, game2)
 
-        # Set up 'metadata' and its sub-attributes for the mock
-        self.mock_game_simulation_data.metadata = mock.MagicMock()
-        self.mock_game_simulation_data.metadata.board_size = 4
+    def test_game_not_equal_different_turns(self):
+        game1 = ChineseCheckersGame.start_game()
+        game2 = ChineseCheckersGame.start_game()
+        game2.turn = 1
+        self.assertNotEqual(game1, game2)
 
-    def test_from_simulation_data(self):
-        animation_instance = GameSimulationAnimation.from_simulation_data(self.mock_game_simulation_data)
+    def test_game_not_equal_different_players(self):
+        game1 = ChineseCheckersGame.start_game()
+        game2 = ChineseCheckersGame.start_game()
+        game2.players[0].positions = []
+        self.assertNotEqual(game1, game2)
 
-        # Test if the animation object has been created
-        self.assertTrue(hasattr(animation_instance, "anim"))
-        self.assertTrue(isinstance(animation_instance.game_sequence, list))
-        self.assertEqual(len(animation_instance.game_sequence), 2)
+    def test_game_not_equal_different_player_count(self):
+        game1 = ChineseCheckersGame.start_game(number_of_players=2)
+        game2 = ChineseCheckersGame.start_game(number_of_players=3)
+        self.assertNotEqual(game1, game2)
 
-    def test_display(self):
-        animation_instance = GameSimulationAnimation(self.mock_game_sequence)
+    def test_game_not_equal_different_board(self):
+        game1 = ChineseCheckersGame.start_game()
+        game2 = ChineseCheckersGame.start_game(board_size=10)
+        self.assertNotEqual(game1, game2)
 
-        with mock.patch.object(plt, "show", return_value=None):
-            # Check if it runs without issues
-            animation_instance.display()
+    def test_hash(self):
+        game = ChineseCheckersGame.start_game()
+        self.assertEqual(hash(game), hash((tuple(game.players), game.board.radius)))
 
+    def test_current_player(self):
+        game = ChineseCheckersGame.start_game()
+        self.assertEqual(game.get_current_player(), game.players[0])
+
+        game = game.apply_move(game.get_next_moves()[0])
+        self.assertEqual(game.get_current_player(), game.players[1])
+
+    def test_other_players(self):
+        game = ChineseCheckersGame.start_game()
+        self.assertEqual(game.get_other_players(), game.players[1:])
+
+        game = game.apply_move(game.get_next_moves()[0])
+        self.assertEqual(game.get_other_players(), [game.players[0]] + game.players[2:])
+
+    def test_is_game_not_won(self):
+        game = ChineseCheckersGame.start_game()
+
+        # verify
+        self.assertFalse(game.is_game_won())
+
+    def test_is_game_won(self):
+        game = ChineseCheckersGame.start_game()
+        game.players[0].positions = game.players[0].target_positions
+
+        # verify
+        self.assertTrue(game.is_game_won())
+
+    def test_get_winner(self):
+        game = ChineseCheckersGame.start_game()
+        game.players[0].positions = game.players[0].target_positions
+
+        # verify
+        self.assertTrue(game.get_winner() == game.players[0])
+
+    # New tests for input validation
+    def test_invalid_number_of_players(self):
+        with self.assertRaises(ValueError) as context:
+            ChineseCheckersGame.start_game(number_of_players=5)
+        self.assertEqual(str(context.exception), "Invalid number of players: 5. Must be one of {2, 3, 4, 6}.")
+
+    def test_invalid_board_size_zero(self):
+        with self.assertRaises(ValueError) as context:
+            ChineseCheckersGame.start_game(board_size=0)
+        self.assertEqual(str(context.exception), "Invalid board size: 0. Board size must be a positive integer.")
+
+    def test_invalid_board_size_negative(self):
+        with self.assertRaises(ValueError) as context:
+            ChineseCheckersGame.start_game(board_size=-1)
+        self.assertEqual(str(context.exception), "Invalid board size: -1. Board size must be a positive integer.")
+
+    def test_invalid_board_size_non_integer(self):
+        with self.assertRaises(ValueError) as context:
+            ChineseCheckersGame.start_game(board_size="large")
+        self.assertEqual(str(context.exception), "Invalid board size: large. Board size must be a positive integer.")

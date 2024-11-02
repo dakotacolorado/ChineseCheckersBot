@@ -22,13 +22,32 @@ class ChineseCheckersGame:
         Chinese Checkers Wiki: https://en.wikipedia.org/wiki/Chinese_checkers
 
         Args:
-            number_of_players: Number of players (2,3,4, or 6). default: 2
+            number_of_players: Number of players (2, 3, 4, or 6). default: 2
             board_size: Optionally you can provide a board size (> 0).
+
+        Raises:
+            ValueError: If number_of_players is not 2, 3, 4, or 6.
+            ValueError: If board_size is not a positive integer.
         """
+
+        # Validate number_of_players
+        valid_player_counts = {2, 3, 4, 6}
+        if number_of_players not in valid_player_counts:
+            raise ValueError(
+                f"Invalid number of players: {number_of_players}. "
+                f"Must be one of {valid_player_counts}."
+            )
+
+        # Validate board_size
+        if not isinstance(board_size, int) or board_size <= 0:
+            raise ValueError(
+                f"Invalid board size: {board_size}. "
+                "Board size must be a positive integer."
+            )
 
         hexagram = Hexagram(board_size)
 
-        # Depending on the amount of players a different subset of starting corners will be used.
+        # Depending on the amount of players, a different subset of starting corners will be used.
         starting_player_corners: Dict[int, List[int]] = {
             2: [0, 3],
             3: [0, 2, 4],
@@ -40,7 +59,6 @@ class ChineseCheckersGame:
         players = [
             Player(
                 [Position(v.i, v.j) for v in hexagram.hexagram_corner_points[corner_index]],
-                # opposite corner is the corner with the same index + 3 (mod 6)
                 [Position(v.i, v.j) for v in hexagram.hexagram_corner_points[(corner_index + 3) % 6]],
                 str(corner_index)
             )
