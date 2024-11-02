@@ -1,12 +1,15 @@
 import logging
+import os
+import tempfile
+from typing import List
+
+import matplotlib.pyplot as plt
+from IPython.display import Image
+from matplotlib.animation import FuncAnimation, writers
 from tqdm import tqdm
-from IPython.core.display import HTML
 
 from . import GameSimulation
 from ..game.ChineseCheckersGame import ChineseCheckersGame
-from typing import List
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation, writers
 
 
 class GameSimulationAnimation:
@@ -37,6 +40,9 @@ class GameSimulationAnimation:
         self.pbar = tqdm(total=len(self.game_sequence), desc="Creating Animation")
         self.anim: FuncAnimation = self._create_animation()
 
+        # Set a hidden temp GIF file path for display
+        self.temp_gif_path = os.path.join(tempfile.gettempdir(), ".temp_animation.gif")
+
     def _create_animation(self) -> FuncAnimation:
         """Creates the animation by iterating over game states."""
         animation = FuncAnimation(
@@ -61,9 +67,12 @@ class GameSimulationAnimation:
         self.pbar.update(1)
         return self.ax,
 
-    def display(self) -> HTML:
-        """Displays the animation in Jupyter Notebook."""
-        return HTML(self.anim.to_jshtml())
+    def display(self, fps: int = 10):
+        """Displays the animation as a GIF in Jupyter Notebook or JupyterLab."""
+        writer = writers['pillow'](fps=fps)
+        self.anim.save(self.temp_gif_path, writer=writer)
+        logging.info(f"Temporary GIF saved to {self.temp_gif_path}")
+        return Image(filename=self.temp_gif_path)
 
     def save_to_file(self, file_path: str, fps: int = 30):
         """Saves the animation to a video file.

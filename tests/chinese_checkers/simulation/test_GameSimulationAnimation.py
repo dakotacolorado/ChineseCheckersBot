@@ -1,8 +1,10 @@
 from unittest import TestCase, mock
 from matplotlib.animation import FuncAnimation
+from IPython.display import Image
 from src.chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
 from src.chinese_checkers.simulation.GameSimulationAnimation import GameSimulationAnimation
 from src.chinese_checkers.simulation.GameSimulation import GameSimulation
+import os
 
 
 class TestGameSimulationAnimation(TestCase):
@@ -27,13 +29,19 @@ class TestGameSimulationAnimation(TestCase):
         self.assertEqual(len(animation_instance.game_sequence), 2,
                          "Expected game sequence length to match input sequence length.")
 
-    def test_display_returns_html(self):
+    def test_display_creates_and_displays_gif(self):
+        # Test that display method creates a temporary GIF and returns an Image display object
         animation_instance = GameSimulationAnimation(self.mock_game_sequence)
 
-        with mock.patch.object(animation_instance.anim, "to_jshtml", return_value="<HTML>"):
+        # Mock the save method to prevent actual file creation
+        with mock.patch.object(animation_instance.anim, "save") as mock_save:
             result = animation_instance.display()
-            self.assertIn("<HTML>", result.data,
-                          "Expected display method to return HTML format for Jupyter Notebook display.")
+            mock_save.assert_called_once_with(animation_instance.temp_gif_path, writer=mock.ANY)
+            self.assertIsInstance(result, Image, "Expected display method to return an IPython.display.Image object.")
+            self.assertTrue(os.path.exists(animation_instance.temp_gif_path), "Temporary GIF file should exist.")
+            # Clean up temp file if it was created during the test
+            if os.path.exists(animation_instance.temp_gif_path):
+                os.remove(animation_instance.temp_gif_path)
 
     def test_update_plot_functionality(self):
         animation_instance = GameSimulationAnimation(self.mock_game_sequence)
