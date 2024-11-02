@@ -74,6 +74,12 @@ class ChineseCheckersGame:
             board: Hexagram = Hexagram(4),
             printer: Printer = Printer()
     ):
+        valid_player_counts = {2, 3, 4, 6}
+        if len(players) not in valid_player_counts:
+            raise ValueError(
+                f"Invalid number of players: {len(players)}. "
+                f"Must be one of {valid_player_counts}."
+            )
         self.players = players
         self.turn = turn
         self.board = board
