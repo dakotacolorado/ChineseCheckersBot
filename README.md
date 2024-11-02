@@ -74,3 +74,7 @@ This package is a personal project and is near completion. It's currently not op
 ### License
 
 Please refer to the `LICENSE` file for licensing information.
+
+### Setup Notes
+Install this if you want to save animations:
+https://ffmpeg.org/download.html
