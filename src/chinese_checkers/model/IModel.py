@@ -12,13 +12,11 @@ class IModel(ABC):
     """
 
     @abstractmethod
-    def _chose_next_move(self, current_player: Player, other_players: List[Player], moves: List[Move]) -> Move:
+    def _chose_next_move(self, game: ChineseCheckersGame) -> Move:
         """
         Chooses the next move to make.
         Args:
-            current_player: current player
-            other_players: other players in the game
-            moves: list of possible moves for current player
+            game (ChineseCheckersGame): The current game state.
 
         Returns:
             Next move to make.
@@ -26,8 +24,5 @@ class IModel(ABC):
         pass
 
     def make_move(self, game: ChineseCheckersGame) -> (ChineseCheckersGame, Move):
-        moves: List[Move] = game.get_next_moves()
-        current_player: Player = game.get_current_player()
-        other_players: Player = game.get_other_players()
-        move: Move = self._chose_next_move(current_player, other_players, moves)
+        move: Move = self._chose_next_move(game)
         return game.apply_move(move), move

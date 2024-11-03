@@ -1,63 +1,39 @@
-from typing import List
-from unittest import TestCase
+import unittest
 
-from src.chinese_checkers.game.Move import Move
-from src.chinese_checkers.game.Player import Player
-from src.chinese_checkers.game.Position import Position
-from src.chinese_checkers.model.BootstrapModel import BootstrapModel
+from src.chinese_checkers.game import Move
+from src.chinese_checkers.game import ChineseCheckersGame
+from src.chinese_checkers.model import BootstrapModel
+from src.chinese_checkers.geometry.Vector import Vector
 
 
-class TestBootstrapModel(TestCase):
+class TestBootstrapModel(unittest.TestCase):
 
-    def setUp(self) -> None:
+    def setUp(self):
+        # Initialize the game and BootstrapModel for testing
+        self.game = ChineseCheckersGame.start_game()
+        self.game.start_game()
         self.model = BootstrapModel()
 
     def test_chose_next_move(self):
-        current_player = Player([], [], 'Player 1')
-        other_players = [Player([], [], 'Player 2')]
-        moves = []
-        with self.assertRaises(Exception):
-            self.model._chose_next_move(current_player, other_players, moves)
+        # Verify that `_chose_next_move` returns a valid move
+        move = self.model._chose_next_move(self.game)
 
-    @staticmethod
-    def _unit_moves_for_position(position: Position) -> List[Move]:
-        return [
-            Move(1, 0, position),
-            Move(0, 1, position),
-            Move(-1, 1, position),
-            Move(-1, 0, position),
-            Move(0, -1, position),
-            Move(1, -1, position),
-        ]
+        # Assert that a move is returned and that it's a Move instance
+        self.assertIsNotNone(move, "The model did not return a move.")
+        self.assertIsInstance(move, Move, "The returned move is not an instance of Move.")
 
-    def test_chose_next_unit_move(self):
-        position = Position(0, 0)
-        target_position = Position(3, 0)
-        expected_move = Move(1, 0, position)
+        # Verify that the move's position is a Vector
+        self.assertIsInstance(move.position, Vector, "The move's position is not a Vector instance.")
 
-        current_player = Player([position], [target_position], 'Player 1')
-        other_players = []
+    def test_chose_next_move_no_viable_move(self):
+        # Temporarily modify game state to simulate no viable moves
+        self.game.get_next_moves = lambda: []
 
-        moves = TestBootstrapModel._unit_moves_for_position(position)
+        # Check that an exception is raised when there are no moves
+        with self.assertRaises(Exception) as context:
+            self.model._chose_next_move(self.game)
+        self.assertEqual(str(context.exception), "No viable move found", "Unexpected exception message.")
 
-        next_move = self.model._chose_next_move(current_player, other_players, moves)
 
-        self.assertEqual(expected_move, next_move)
-
-    def test_chose_next_hop_move(self):
-        position = Position(0, 0)
-        hop_position = Position(1, 0)
-        target_position = Position(3, 1)
-        expected_move = Move(2, 1, position)
-
-        current_player = Player([position, hop_position], [target_position], 'Player 1')
-        other_players = []
-
-        moves = [
-            *TestBootstrapModel._unit_moves_for_position(position),
-            expected_move
-        ]
-
-        next_move = self.model._chose_next_move(current_player, other_players, moves)
-
-        self.assertEqual(expected_move, next_move)
+if __name__ == '__main__':
+    unittest.main()

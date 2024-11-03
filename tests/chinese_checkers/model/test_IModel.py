@@ -7,9 +7,9 @@ from unittest import TestCase
 
 
 class BasicModel(IModel):
-    def _chose_next_move(self, current_player, other_players, moves: List[Move]) -> Move:
+    def _chose_next_move(self, game: ChineseCheckersGame) -> Move:
         """ Chose the first move in the list of moves. """
-        return moves[0]
+        return game.get_next_moves()[0]
 
 
 class TestIModel(TestCase):

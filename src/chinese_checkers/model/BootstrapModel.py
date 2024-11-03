@@ -3,13 +3,13 @@ from typing import List
 from random import choice
 
 from .IModel import IModel
-from ..game import Player, Move, Position
+from ..game import Player, Move, ChineseCheckersGame
 from ..geometry.Vector import Vector
 
 
 class BootstrapModel(IModel):
 
-    def _chose_next_move(self, current_player: Player, other_players: List[Player], moves: List[Move]) -> Move:
+    def _chose_next_move(self, game: ChineseCheckersGame) -> Move:
         """
         The BootstrapModel provides a foundational strategy for gameplay, serving as a
         bootstrapped or initial mechanism for move selection. This basic approach can
@@ -40,6 +40,9 @@ class BootstrapModel(IModel):
         Returns:
             Next move to make.
         """
+        moves: List[Move] = game.get_next_moves()
+        current_player: Player = game.get_current_player()
+        other_players: List[Player] = game.get_other_players()
         closest_distance = float('inf')
         best_moves = []
 
