@@ -23,41 +23,66 @@ class LocalH5Catalog(ABC, Generic[M, D]):
         """Abstract property that must be defined by each subclass to specify the filename."""
         ...
 
+    @property
+    @abstractmethod
+    def metadata_cls(self) -> Type[M]:
+        """The concrete metadata class to be used in the catalog."""
+        ...
+
+    @property
+    @abstractmethod
+    def data_cls(self) -> Type[D]:
+        """The concrete data class to be used in the catalog."""
+        ...
+
     def _construct_path(self, metadata: M) -> Path:
         """Constructs the path for the dataset based on metadata."""
         return self.catalog_path.joinpath(metadata.to_path(), self.filename)
 
-    def save_data(self, metadata: M, data: D) -> None:
-        """Saves data associated with the provided metadata, appending to an existing dataset or creating a new one."""
+    def create_dataset(self, metadata: M) -> None:
+        """Creates a new dataset identified by the provided metadata if it does not exist."""
         file_path = self._construct_path(metadata)
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        storable_data = data.to_storable()
+        if not file_path.exists():
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            with h5py.File(file_path, 'w') as _:
+                pass  # Creates an empty HDF5 file
+            logger.info(f"Created new dataset for metadata {metadata}")
+        else:
+            logger.info(f"Dataset already exists for metadata {metadata}")
+
+    def add_record(self, metadata: M, record: D) -> None:
+        """Appends a record to the dataset identified by the provided metadata key."""
+        file_path = self._construct_path(metadata)
+        storable_data = record.to_storable()
 
         with h5py.File(file_path, 'a') as h5file:
             group = h5file.create_group(f'data_{len(h5file.keys())}')
             for key, value in storable_data.items():
                 group.create_dataset(key, data=value)
 
-        logger.info(f"Saved data at {file_path}")
+        logger.info(f"Added record to dataset with metadata {metadata}")
 
-    def load_data(self, metadata: M, data_cls: Type[D]) -> Iterator[D]:
-        """Loads data associated with the specified metadata."""
+    def load_dataset(self, metadata: M) -> List[D]:
+        """Loads all records associated with the specified metadata key."""
         dataset_path = self._construct_path(metadata)
 
         if not dataset_path.is_file():
             logger.error(f"Dataset file {dataset_path} does not exist.")
-            return
+            return []
 
+        records = []
         with h5py.File(dataset_path, 'r') as h5file:
             for key in h5file.keys():
                 group = h5file[key]
                 storable_data = {k: group[k][:] for k in group.keys()}
-                yield data_cls.from_storable(storable_data)
+                records.append(self.data_cls.from_storable(storable_data))
 
-    def list_available_metadata(self, metadata_cls: Type[M]) -> List[M]:
-        """Lists all metadata objects available in the catalog."""
+        return records
+
+    def list_datasets(self) -> List[M]:
+        """Returns a list of metadata objects currently available in the catalog."""
         dataset_paths = list(self.catalog_path.rglob(self.filename))
-        return [self._extract_metadata_from_path(path.parent, metadata_cls) for path in dataset_paths]
+        return [self._extract_metadata_from_path(path.parent, self.metadata_cls) for path in dataset_paths]
 
     @staticmethod
     def _extract_metadata_from_path(directory_path: Path, metadata_cls: Type[M]) -> M:

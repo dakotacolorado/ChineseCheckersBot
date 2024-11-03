@@ -1,5 +1,5 @@
 import logging
-from typing import List, Iterator
+from typing import List, Iterator, Type
 
 from .GameSimulation import GameSimulation
 from .SimulationData import SimulationData
@@ -14,16 +14,25 @@ class SimulationCatalog(LocalH5Catalog[SimulationMetadata, SimulationData]):
     def filename(self) -> str:
         return 'GameSimulation.h5'
 
+    @property
+    def metadata_cls(self) -> Type[SimulationMetadata]:
+        return SimulationMetadata
+
+    @property
+    def data_cls(self) -> Type[SimulationData]:
+        return SimulationData
+
     def save_simulation(self, simulation: GameSimulation) -> None:
         """Saves a game simulation, using the simulation's metadata as the key."""
-        self.save_data(simulation.metadata, simulation.data)
+        self.create_dataset(simulation.metadata)
+        self.add_record(simulation.metadata, simulation.data)
         logger.info(f"Saved simulation with metadata {simulation.metadata}")
 
     def load_simulations_by_metadata(self, metadata: SimulationMetadata) -> Iterator[GameSimulation]:
         """Loads all game simulations that match the given metadata."""
-        for data in self.load_data(metadata, SimulationData):
+        for data in self.load_dataset(metadata):
             yield GameSimulation(metadata, data)
 
     def list_available_metadata(self) -> List[SimulationMetadata]:
         """Lists all metadata instances available in the catalog."""
-        return super().list_available_metadata(SimulationMetadata)
+        return self.list_datasets()
