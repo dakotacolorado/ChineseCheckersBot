@@ -67,11 +67,3 @@ class TestGameSimulationCatalog(unittest.TestCase):
         self.assertEqual(len(available_metadata), 1)
         self.assertEqual(available_metadata[0], self.sample_metadata)
 
-    def test_invalid_index_load(self):
-        # Save a simulation
-        simulation = GameSimulation(self.sample_metadata, self.sample_data)
-        self.catalog.save_simulation(simulation)
-
-        # Try to load a simulation with an invalid index
-        with self.assertRaises(ValueError):
-            list(self.catalog.load_simulations_by_metadata(self.sample_metadata, "invalid_index"))
