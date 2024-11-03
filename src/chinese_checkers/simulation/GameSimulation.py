@@ -79,8 +79,8 @@ class GameSimulation:
             raise ValueError("Invalid number of models. Must be 2, 3, 4, or 6.")
         if not re.match(version_pattern, version):
             raise ValueError("Version must follow the 'v<major>.<minor>.<patch>' format.")
-        if max_turns > 1000:
-            raise ValueError("Max turns cannot exceed 1000.")
+        if max_turns > 10000:
+            raise ValueError("Max turns cannot exceed 10000.")
         if not re.match(name_pattern, name):
             raise ValueError("Name can only contain letters, numbers, underscores (_), and hyphens (-).")
         if print_period <= 0:
