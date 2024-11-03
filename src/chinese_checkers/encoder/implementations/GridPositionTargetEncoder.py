@@ -1,8 +1,12 @@
+import warnings
 from typing import Tuple
+
 import torch
+
 from .BaseChineseCheckersGameEncoder import BaseChineseCheckersGameEncoder
 from ..interfaces import IMoveEncoder
 from ...game.ChineseCheckersGame import ChineseCheckersGame
+
 
 class GridPositionTargetEncoder(BaseChineseCheckersGameEncoder):
 
@@ -12,6 +16,12 @@ class GridPositionTargetEncoder(BaseChineseCheckersGameEncoder):
             max_moves: int,
             board_size: int,
     ):
+        warnings.warn(
+            f"{self.__class__.__name__} is deprecated and will be removed in a future version. "
+            "Consider using SpatialBoardStateEncoder instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         super().__init__(move_encoder, max_moves)
         self.board_size = board_size
         self.board_dim = self._calculate_board_dim(board_size)
