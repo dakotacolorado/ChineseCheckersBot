@@ -13,7 +13,7 @@ class BasicMoveEncoder(IMoveEncoder):
     MOVE_DIM: int = 4  # Dimension of the move encoding [start_x, start_y, end_x, end_y]
 
     @property
-    def output_shape(self) -> Tuple[int, ...]:
+    def shape(self) -> Tuple[int, ...]:
         """
         Returns the shape of the output tensor from the encoding.
 
@@ -43,4 +43,4 @@ class BasicMoveEncoder(IMoveEncoder):
         Returns:
             torch.Tensor: A tensor [0, 0, 0, 0] representing a no-op or dummy move.
         """
-        return torch.zeros(self.output_shape, dtype=torch.int32)
+        return torch.zeros(self.shape, dtype=torch.int32)
