@@ -157,5 +157,10 @@ class ChineseCheckersGame:
         self.printer.print(
             self.board.hexagram_points,
             *[p.positions for p in self.players],
+            game_metrics={
+                "Turn": self.turn,
+                "Current Player": self.get_current_player().player_id,
+                "Next Moves": len(self.get_next_moves()),
+            },
             **print_settings
         )

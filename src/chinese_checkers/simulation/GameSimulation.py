@@ -29,7 +29,7 @@ class GameSimulation:
             version: str,
             max_turns: int = 1000,
             board_size: int = 4,
-            print_period: int = 0,
+            print_period: int = None,
             show_coordinates: bool = False,
     ) -> "GameSimulation":
         """Runs a simulation where models play the game in turns until a player wins or max turns is reached.
@@ -83,7 +83,7 @@ class GameSimulation:
             raise ValueError("Max turns cannot exceed 10000.")
         if not re.match(name_pattern, name):
             raise ValueError("Name can only contain letters, numbers, underscores (_), and hyphens (-).")
-        if print_period <= 0:
+        if print_period and print_period <= 0:
             raise ValueError("Print period must be greater than 0.")
         if board_size <= 1:
             raise ValueError("Board size must be greater than 1.")
@@ -130,6 +130,9 @@ class GameSimulation:
             current_model = models[game.turn % len(models)]
             game, move = current_model.make_move(game)
             move_history.append(move)
+
+            if print_period and game.turn % print_period == 1:
+                game.print()
 
         if game.turn >= max_turns:
             raise Exception(f"Game did not finish within {max_turns} turns.")

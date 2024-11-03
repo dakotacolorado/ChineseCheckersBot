@@ -23,9 +23,10 @@ class Printer:
             self,
             *point_groups: List[List[Vector]],
             axes: plt.Axes = None,
-            show_plot: bool = True
+            show_plot: bool = True,
+            game_metrics: Dict[str, any] = None
     ) -> None:
-        """Render hexagons for the primary and any additional point groups."""
+        """Render hexagons for the primary and any additional point groups and display game metrics."""
 
         # Set up the axes.
         axes = self._setup_axes(self.plot_size, axes)
@@ -43,6 +44,10 @@ class Printer:
         self._plot_hexagon_points(axes, regularized_points, point_colors)
         if self.show_coordinates:
             self._annotate_points(axes, regularized_points, all_points, self.plot_size)
+
+        # Display the game metrics if provided
+        if game_metrics:
+            self._display_game_metrics(axes, game_metrics)
 
         if show_plot and not axes:
             plt.show()
@@ -115,3 +120,17 @@ class Printer:
             fig, axes = plt.subplots(1, figsize=(plot_size, plot_size))
             axes.set_aspect('equal')
             return axes
+
+    @staticmethod
+    def _display_game_metrics(axes: plt.Axes, game_metrics: Dict[str, any]) -> None:
+        """Display game metrics on the plot as key-value pairs in a text box."""
+        metric_text = "\n".join([f"{key}: {value}" for key, value in game_metrics.items()])
+
+        # Place the text box on the right side of the plot
+        axes.text(
+            1.05, 0.5, metric_text,
+            transform=axes.transAxes,
+            verticalalignment='center',
+            bbox=dict(boxstyle="round,pad=0.5", edgecolor="black", facecolor="lightgrey"),
+            fontsize=10
+        )
