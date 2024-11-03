@@ -1,11 +1,11 @@
 from .GameSimulation import GameSimulation
 from .SimulationData import SimulationData
 from .SimulationMetadata import SimulationMetadata
-from .GameSimulationCatalog import GameSimulationCatalog
+from .SimulationCatalog import SimulationCatalog
 
 __all__ = [
     "GameSimulation",
     "SimulationData",
     "SimulationMetadata",
-    "GameSimulationCatalog"
+    "SimulationCatalog"
 ]

@@ -10,7 +10,7 @@ from .SimulationMetadata import SimulationMetadata
 logger = logging.getLogger(__name__)
 
 
-class GameSimulationCatalog:
+class SimulationCatalog:
     FILENAME = 'GameSimulation.h5'
 
     def __init__(self, catalog_directory: str):

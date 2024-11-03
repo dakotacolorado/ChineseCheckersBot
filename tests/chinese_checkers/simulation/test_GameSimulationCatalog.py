@@ -8,7 +8,7 @@ from src.chinese_checkers.simulation.GameSimulation import GameSimulation
 from src.chinese_checkers.simulation.SimulationData import SimulationData
 from src.chinese_checkers.simulation.SimulationMetadata import SimulationMetadata
 
-from src.chinese_checkers.simulation.GameSimulationCatalog import GameSimulationCatalog
+from src.chinese_checkers.simulation.SimulationCatalog import SimulationCatalog
 
 
 class TestGameSimulationCatalog(unittest.TestCase):
@@ -16,7 +16,7 @@ class TestGameSimulationCatalog(unittest.TestCase):
     def setUp(self):
         # Create a temporary directory for the catalog
         self.temp_dir = tempfile.mkdtemp()
-        self.catalog = GameSimulationCatalog(self.temp_dir)
+        self.catalog = SimulationCatalog(self.temp_dir)
 
         # Sample metadata and data
         self.sample_metadata = SimulationMetadata(
