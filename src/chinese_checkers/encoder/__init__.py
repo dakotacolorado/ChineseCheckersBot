@@ -1,11 +1,12 @@
-from .GridPositionTargetEncoder import GridPositionTargetEncoder
-from .IChineseCheckersGameEncoder import IChineseCheckersGameEncoder
-from .ExperienceEncoder import ExperienceEncoder
-from .MoveEncoder import MoveEncoder
+from .EncoderFactory import EncoderFactory
+from .EncoderMetadata import EncoderMetadata
+from .interfaces import IEncoder, IExperienceEncoder, IChineseCheckersGameEncoder, IMoveEncoder
 
 __all__ = [
-    "GridPositionTargetEncoder",
+    "EncoderFactory",
+    "EncoderMetadata",
+    "IEncoder",
+    "IExperienceEncoder",
     "IChineseCheckersGameEncoder",
-    "ExperienceEncoder",
-    "MoveEncoder",
+    "IMoveEncoder",
 ]
