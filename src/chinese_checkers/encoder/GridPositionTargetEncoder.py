@@ -11,7 +11,7 @@ class GridPositionTargetEncoder(IChineseCheckersGameEncoder):
     and encoded moves for the current state.
     """
 
-    def __init__(self, max_moves: int = 100):
+    def __init__(self, max_moves):
         """
         Initializes the encoder with a maximum number of moves to encode.
 

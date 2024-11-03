@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
+
+import numpy as np
+
 from ..game.ChineseCheckersGame import ChineseCheckersGame
 
 class IChineseCheckersGameEncoder(ABC):
     @abstractmethod
-    def encode(self, game: ChineseCheckersGame) -> any:
+    def encode(self, game: ChineseCheckersGame) -> np.ndarray:
         """
         Encodes a single game state into a format suitable for ML models.
 

@@ -1,11 +1,15 @@
 import numpy as np
+
 from ..game.Move import Move
+
 
 class MoveEncoder:
     """
     Encodes moves in Chinese Checkers, converting them into start and end coordinates as a vector.
     Also provides a dummy action for padding purposes when fewer moves are available.
     """
+
+    MOVE_DIM: int = 4
 
     @staticmethod
     def encode(move: Move) -> np.ndarray:
@@ -31,4 +35,4 @@ class MoveEncoder:
         Returns:
             np.ndarray: An array [0, 0, 0, 0] representing a no-op or dummy move.
         """
-        return np.array([0, 0, 0, 0])
+        return np.zeros(MoveEncoder.MOVE_DIM, dtype=int)

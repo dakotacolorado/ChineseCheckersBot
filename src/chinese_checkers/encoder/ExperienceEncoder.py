@@ -1,10 +1,11 @@
-from typing import Tuple, Any
+from typing import Tuple
+
 import numpy as np
-from numpy import ndarray
 
 from .ChineseCheckersGameEncoderFactory import ChineseCheckersGameEncoderFactory
 from .MoveEncoder import MoveEncoder
 from ..experience import Experience
+
 
 class ExperienceEncoder:
     """
@@ -13,8 +14,8 @@ class ExperienceEncoder:
     Uses `GridPositionTargetEncoder` for encoding game states and `MoveEncoder` for encoding moves.
     """
 
-    def __init__(self, game_encoder: str = "grid_position_target"):
-        self.game_encoder = ChineseCheckersGameEncoderFactory.create(game_encoder)
+    def __init__(self, game_encoder: str = "grid_position_target", max_moves: int = 100):
+        self.game_encoder = ChineseCheckersGameEncoderFactory.create(encoder_name=game_encoder, max_moves=max_moves)
         self.move_encoder = MoveEncoder()
 
     def encode(self, experience: Experience) -> Tuple[np.ndarray, np.ndarray, float, np.ndarray, bool]:

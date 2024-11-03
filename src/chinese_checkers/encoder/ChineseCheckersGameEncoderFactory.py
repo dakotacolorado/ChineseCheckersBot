@@ -12,12 +12,13 @@ class ChineseCheckersGameEncoderFactory:
     }
 
     @staticmethod
-    def create(encoder_name: str) -> IChineseCheckersGameEncoder:
+    def create(encoder_name: str, max_moves: int) -> IChineseCheckersGameEncoder:
         """
         Creates an instance of an encoder based on the specified name.
 
         Args:
             encoder_name (str): The name of the encoder to create.
+            max_moves (int): Maximum number of turns to encode in the state representation.
 
         Returns:
             IChineseCheckersGameEncoder: An instance of the requested encoder.
@@ -28,4 +29,4 @@ class ChineseCheckersGameEncoderFactory:
         encoder_class = ChineseCheckersGameEncoderFactory._encoders.get(encoder_name)
         if not encoder_class:
             raise ValueError(f"Encoder strategy '{encoder_name}' is not available.")
-        return encoder_class()
+        return encoder_class(max_moves=max_moves)
