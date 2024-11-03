@@ -1,7 +1,7 @@
 from typing import Tuple
 import torch
-from chinese_checkers.encoder.interfaces.IMoveEncoder import IMoveEncoder
-from chinese_checkers.game.Move import Move
+from ..interfaces import IMoveEncoder
+from ...game.Move import Move
 
 
 class BasicMoveEncoder(IMoveEncoder):

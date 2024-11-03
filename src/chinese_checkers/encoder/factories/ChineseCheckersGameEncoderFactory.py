@@ -2,7 +2,7 @@ from typing import Dict, Callable
 
 from .IFactory import IFactory
 from .MoveEncoderFactory import MoveEncoderFactory
-from ..implementations import GridPositionTargetEncoder, SpatialBoardStateEncoder
+from ..implementations import GridPositionTargetEncoder, SpatialBoardStateEncoder, SpatialBoardMetricsEncoder
 from ..interfaces import IChineseCheckersGameEncoder
 
 
@@ -30,6 +30,9 @@ class ChineseCheckersGameEncoderFactory(IFactory[IChineseCheckersGameEncoder]):
                 board_size=self.board_size
             ),
             "spatial_board_state": lambda: SpatialBoardStateEncoder(
+                board_size=self.board_size
+            ),
+            "spatial_board_metrics": lambda: SpatialBoardMetricsEncoder(
                 board_size=self.board_size
             ),
         }

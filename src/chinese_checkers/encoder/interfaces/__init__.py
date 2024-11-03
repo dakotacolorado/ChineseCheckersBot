@@ -31,9 +31,11 @@ interchangeable and maintain a high level of code quality and adaptability.
 from .IChineseCheckersGameEncoder import IChineseCheckersGameEncoder
 from .IMoveEncoder import IMoveEncoder
 from .IExperienceEncoder import IExperienceEncoder
+from .IEncoder import IEncoder
 
 __all__ = [
     "IChineseCheckersGameEncoder",
     "IMoveEncoder",
-    "IExperienceEncoder"
+    "IExperienceEncoder",
+    "IEncoder",
 ]

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 import torch
-from chinese_checkers.encoder.interfaces.IEncoder import IEncoder
-from chinese_checkers.experience import Experience
+from .IEncoder import IEncoder
+from ...experience import Experience
 
 
 class IExperienceEncoder(IEncoder[Experience], ABC):

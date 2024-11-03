@@ -5,8 +5,8 @@ from .interfaces import IEncoder, IExperienceEncoder, IChineseCheckersGameEncode
 __all__ = [
     "EncoderRegistry",
     "EncoderMetadata",
-    "IEncoder",
-    "IExperienceEncoder",
     "IChineseCheckersGameEncoder",
     "IMoveEncoder",
+    "IExperienceEncoder",
+    "IEncoder",
 ]

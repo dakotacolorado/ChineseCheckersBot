@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 import torch
-from chinese_checkers.encoder.interfaces.IEncoder import IEncoder
-from chinese_checkers.game.Move import Move
+from .IEncoder import IEncoder
+from ...game.Move import Move
 
 class IMoveEncoder(IEncoder[Move], ABC):
     """
