@@ -1,8 +1,8 @@
 from pathlib import Path
 import logging
 from typing import List, Union, Tuple, Optional, Iterator
-
 import h5py
+import numpy as np
 from .GameSimulation import GameSimulation
 from .SimulationData import SimulationData
 from .SimulationMetadata import SimulationMetadata
@@ -40,24 +40,14 @@ class GameSimulationCatalog:
     ) -> Iterator[GameSimulation]:
         """
         Load the list of game simulations matching the provided metadata.
-        If an index or range of indexes is provided, only the simulations at
-        those positions will be loaded.
-
-        :param metadata: Metadata to filter simulations by.
-        :param index: Optional index or range (start, end) to load specific simulations.
-        :return: An iterator over the matched GameSimulation objects.
         """
-        # Construct the path to the file
         dataset_path = self._construct_path(metadata)
 
-        # Check if the file exists
         if not dataset_path.is_file():
             logger.error(f"Dataset file {dataset_path} does not exist.")
             return
 
-        # Load simulations from the h5py file
         with h5py.File(dataset_path, 'r') as h5file:
-            # If an index is provided, filter the groups (simulations) accordingly
             if index is not None:
                 if isinstance(index, int):
                     keys = [f"simulation_{index}"]
@@ -67,10 +57,8 @@ class GameSimulationCatalog:
                 else:
                     raise ValueError(f"Invalid index format: {index}")
             else:
-                # If no index is provided, load all simulations
                 keys = list(h5file.keys())
 
-            # For each key (simulation), retrieve the data and yield a GameSimulation object
             for key in keys:
                 if key in h5file:
                     group = h5file[key]
@@ -81,11 +69,6 @@ class GameSimulationCatalog:
                     logger.warning(f"Simulation {key} not found in {dataset_path}")
 
     def list_available_metadata(self) -> List[SimulationMetadata]:
-        """
-        Returns a list of all unique metadata options available in the catalog.
-        This does not return the actual simulations but rather the metadata
-        configurations that are stored.
-        """
         dataset_paths = list(self.catalog_path.rglob(self.FILENAME))
         return [self._extract_metadata_from_path(path.parent) for path in dataset_paths]
 
