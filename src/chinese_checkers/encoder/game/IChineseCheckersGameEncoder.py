@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Tuple
 import torch
 
-from .IEncoder import IEncoder
-from ...game.ChineseCheckersGame import ChineseCheckersGame
+from ..IEncoder import IEncoder
+from ...game import ChineseCheckersGame
 
 
 class IChineseCheckersGameEncoder(IEncoder[ChineseCheckersGame], ABC):

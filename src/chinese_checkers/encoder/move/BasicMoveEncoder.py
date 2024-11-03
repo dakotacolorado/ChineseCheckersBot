@@ -1,6 +1,6 @@
 from typing import Tuple
 import torch
-from ..interfaces import IMoveEncoder
+from .IMoveEncoder import IMoveEncoder
 from ...game.Move import Move
 
 

@@ -1,7 +1,12 @@
 import unittest
 from unittest.mock import MagicMock
-from src.chinese_checkers.encoder.factories import ChineseCheckersGameEncoderFactory, MoveEncoderFactory
-from src.chinese_checkers.encoder.implementations import GridPositionTargetEncoder, SpatialBoardStateEncoder, SpatialBoardMetricsEncoder
+
+from src.chinese_checkers.encoder.game import ChineseCheckersGameEncoderFactory
+from src.chinese_checkers.encoder.game.GridPositionTargetEncoder import GridPositionTargetEncoder
+from src.chinese_checkers.encoder.game.SpatialBoardMetricsEncoder import SpatialBoardMetricsEncoder
+from src.chinese_checkers.encoder.game.SpatialBoardStateEncoder import SpatialBoardStateEncoder
+from src.chinese_checkers.encoder.move import MoveEncoderFactory
+
 
 class TestChineseCheckersGameEncoderFactory(unittest.TestCase):
     def setUp(self):

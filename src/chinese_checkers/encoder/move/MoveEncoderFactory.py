@@ -1,8 +1,8 @@
 from typing import Dict, Callable
 
-from .IFactory import IFactory
-from ..implementations.BasicMoveEncoder import BasicMoveEncoder
-from ..interfaces.IMoveEncoder import IMoveEncoder
+from ..IFactory import IFactory
+from .BasicMoveEncoder import BasicMoveEncoder
+from .IMoveEncoder import IMoveEncoder
 
 
 class MoveEncoderFactory(IFactory[IMoveEncoder]):

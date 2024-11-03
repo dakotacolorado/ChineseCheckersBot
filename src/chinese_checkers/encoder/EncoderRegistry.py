@@ -1,7 +1,10 @@
 from typing import Callable, Dict
+
+from . import IEncoder
 from .EncoderMetadata import EncoderMetadata
-from .factories import MoveEncoderFactory, ChineseCheckersGameEncoderFactory, ExperienceEncoderFactory
-from .interfaces import IEncoder
+from .experience import ExperienceEncoderFactory
+from .game import ChineseCheckersGameEncoderFactory
+from .move import MoveEncoderFactory
 
 
 class EncoderRegistry:

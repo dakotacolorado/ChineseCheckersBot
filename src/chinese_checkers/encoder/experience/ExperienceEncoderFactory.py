@@ -1,10 +1,10 @@
 from typing import Callable
 
-from .ChineseCheckersGameEncoderFactory import ChineseCheckersGameEncoderFactory
-from .IFactory import IFactory
-from .MoveEncoderFactory import MoveEncoderFactory
-from ..implementations import ExperienceEncoder
-from ..interfaces import IExperienceEncoder
+from ..game import ChineseCheckersGameEncoderFactory
+from ..IFactory import IFactory
+from ..move import MoveEncoderFactory
+from .IExperienceEncoder import IExperienceEncoder
+from .ExperienceEncoder import ExperienceEncoder
 
 
 class ExperienceEncoderFactory(IFactory[IExperienceEncoder]):

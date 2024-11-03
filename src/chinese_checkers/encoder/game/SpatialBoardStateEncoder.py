@@ -1,7 +1,7 @@
 from typing import Tuple
 import torch
 import numpy as np
-from ..interfaces import IChineseCheckersGameEncoder
+from .IChineseCheckersGameEncoder import IChineseCheckersGameEncoder
 from ...game.ChineseCheckersGame import ChineseCheckersGame
 
 

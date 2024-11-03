@@ -1,7 +1,7 @@
 import logging
 from typing import Tuple, List
 import torch
-from ..interfaces import IChineseCheckersGameEncoder
+from .IChineseCheckersGameEncoder import IChineseCheckersGameEncoder
 from ...game import ChineseCheckersGame, Player, Position
 
 

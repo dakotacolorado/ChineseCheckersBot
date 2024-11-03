@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 import torch
 from typing import Tuple
-from ..interfaces import IMoveEncoder
-from ..interfaces.IChineseCheckersGameEncoder import IChineseCheckersGameEncoder
-from ...game.ChineseCheckersGame import ChineseCheckersGame
+from ..move import IMoveEncoder
+from .IChineseCheckersGameEncoder import IChineseCheckersGameEncoder
+from ...game import ChineseCheckersGame
 
 
 class BaseChineseCheckersGameEncoder(IChineseCheckersGameEncoder, ABC):

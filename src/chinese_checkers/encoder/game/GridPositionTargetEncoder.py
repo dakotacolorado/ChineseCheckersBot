@@ -3,9 +3,9 @@ from typing import Tuple
 
 import torch
 
+from ..move.IMoveEncoder import IMoveEncoder
 from .BaseChineseCheckersGameEncoder import BaseChineseCheckersGameEncoder
-from ..interfaces import IMoveEncoder
-from ...game.ChineseCheckersGame import ChineseCheckersGame
+from ...game import ChineseCheckersGame
 
 
 class GridPositionTargetEncoder(BaseChineseCheckersGameEncoder):

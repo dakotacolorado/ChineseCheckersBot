@@ -1,9 +1,11 @@
 from typing import Dict, Callable
 
-from .IFactory import IFactory
-from .MoveEncoderFactory import MoveEncoderFactory
-from ..implementations import GridPositionTargetEncoder, SpatialBoardStateEncoder, SpatialBoardMetricsEncoder
-from ..interfaces import IChineseCheckersGameEncoder
+from .GridPositionTargetEncoder import GridPositionTargetEncoder
+from .IChineseCheckersGameEncoder import IChineseCheckersGameEncoder
+from .SpatialBoardMetricsEncoder import SpatialBoardMetricsEncoder
+from .SpatialBoardStateEncoder import SpatialBoardStateEncoder
+from ..IFactory import IFactory
+from ..move.MoveEncoderFactory import MoveEncoderFactory
 
 
 class ChineseCheckersGameEncoderFactory(IFactory[IChineseCheckersGameEncoder]):

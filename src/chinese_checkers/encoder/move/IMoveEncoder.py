@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 import torch
-from .IEncoder import IEncoder
+from ..IEncoder import IEncoder
 from ...game.Move import Move
 
 class IMoveEncoder(IEncoder[Move], ABC):

@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
 
-from src.chinese_checkers.encoder.implementations import SpatialBoardStateEncoder
-from src.chinese_checkers.game import ChineseCheckersGame, Player, Position
+from src.chinese_checkers.game import ChineseCheckersGame, Position, Player
+from src.chinese_checkers.encoder.game.SpatialBoardStateEncoder import SpatialBoardStateEncoder
 
 
 class TestSpatialBoardStateEncoder(unittest.TestCase):

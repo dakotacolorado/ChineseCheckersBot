@@ -1,9 +1,12 @@
 from typing import Tuple
+
 import torch
-from ..interfaces.IChineseCheckersGameEncoder import IChineseCheckersGameEncoder
-from ..interfaces.IMoveEncoder import IMoveEncoder
-from ..interfaces.IExperienceEncoder import IExperienceEncoder
+
+from .IExperienceEncoder import IExperienceEncoder
+from ..game import IChineseCheckersGameEncoder
+from ..move import IMoveEncoder
 from ...experience import Experience
+
 
 class ExperienceEncoder(IExperienceEncoder):
     """
@@ -31,7 +34,7 @@ class ExperienceEncoder(IExperienceEncoder):
         """
         return (
             *self.game_encoder.shape,  # Shape of encoded game state
-            *self.move_encoder.shape   # Shape of encoded action
+            *self.move_encoder.shape  # Shape of encoded action
         )
 
     def encode(self, experience: Experience) -> Tuple[torch.Tensor, torch.Tensor, float, torch.Tensor, bool]:
