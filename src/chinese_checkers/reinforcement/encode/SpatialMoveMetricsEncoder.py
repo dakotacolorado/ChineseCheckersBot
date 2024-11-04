@@ -2,6 +2,9 @@ import torch
 from chinese_checkers.game import Move, ChineseCheckersGame, Position
 from typing import List
 
+from chinese_checkers.geometry.Vector import Vector
+
+
 class SpatialMoveMetricsEncoder:
 
     def encode(self, move: Move, game: ChineseCheckersGame) -> torch.Tensor:
@@ -19,7 +22,7 @@ class SpatialMoveMetricsEncoder:
             torch.Tensor: A tensor [move_length, start_distance, end_distance].
         """
         current_player = game.get_current_player()
-        target_centroid = self._calculate_target_centroid(current_player.target_positions)
+        target_centroid = self._calculate_centroid(current_player.target_positions)
         board_radius = game.board.radius  # Assuming game.board provides the radius
 
         move_length = self._calculate_move_length(move, board_radius)
@@ -46,34 +49,14 @@ class SpatialMoveMetricsEncoder:
         return distance / board_radius
 
     @staticmethod
-    def _calculate_target_centroid(target_positions: List[Position]) -> Position:
-        """
-        Calculates the centroid of target positions.
-
-        Args:
-            target_positions (List[Position]): List of target positions for the player.
-
-        Returns:
-            Position: The centroid of the target positions.
-        """
-        x_coords = [pos.i for pos in target_positions]
-        y_coords = [pos.j for pos in target_positions]
-        centroid_x = sum(x_coords) / len(target_positions)
-        centroid_y = sum(y_coords) / len(target_positions)
-        return Position(int(centroid_x), int(centroid_y))
+    def _calculate_centroid(positions: List[Position]) -> Vector:
+        if not positions:
+            return Vector(0.0, 0.0)
+        avg_i = sum(pos.i for pos in positions) / len(positions)
+        avg_j = sum(pos.j for pos in positions) / len(positions)
+        return Vector(avg_i, avg_j)
 
     @staticmethod
     def _distance_from_target_centroid(position: Position, centroid: Position, board_radius: float) -> float:
-        """
-        Calculates the normalized distance between a given position and the target centroid.
-
-        Args:
-            position (Position): The position to measure.
-            centroid (Position): The target centroid.
-            board_radius (float): The board radius for normalization.
-
-        Returns:
-            float: The Euclidean distance between the position and centroid, normalized by board radius.
-        """
         distance = position.distance(centroid)
         return distance / board_radius

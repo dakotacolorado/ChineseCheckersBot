@@ -31,7 +31,7 @@ class ExperienceCatalog(LocalH5Catalog[ExperienceMetadata, ExperienceData, Exper
         """Saves an experience, using the experience's metadata as the key."""
         self.create_dataset(experience.metadata)
         self.add_record(experience.metadata, experience.data)
-        self.logger.info(f"Saved experience with metadata {experience.metadata}")
+        self.logger.debug(f"Saved experience with metadata {experience.metadata}")
 
     def load_experiences_by_metadata(self, metadata: ExperienceMetadata) -> Iterator[Experience]:
         """Loads all experiences that match the given metadata."""

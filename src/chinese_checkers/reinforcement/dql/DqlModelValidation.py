@@ -1,56 +1,38 @@
 import torch
-from typing import List, Tuple
-import numpy as np
+from torch import nn
+from typing import List
+from ..experience import ExperienceData
 
 class DqlModelValidation:
-    def __init__(self, agent, validation_data: List[Tuple[np.ndarray, np.ndarray, float, np.ndarray, bool]]):
-        """
-        Initialize the DqlModelValidation with a trained DQLAgent and a validation dataset.
+    def __init__(self, model: nn.Module, gamma: float, test_set: List[ExperienceData], validation_set: List[ExperienceData]):
+        self.model = model
+        self.gamma = gamma
+        self.test_set = test_set
+        self.validation_set = validation_set
 
-        Args:
-            agent (DQLAgent): The trained DQLAgent to be validated.
-            validation_data (List[Tuple[np.ndarray, np.ndarray, float, np.ndarray, bool]]):
-                Encoded validation data consisting of tuples (state, action, simulation, next_state, done).
-        """
-        self.agent = agent
-        self.validation_data = validation_data
+    def validate(self) -> dict:
+        test_error = self._compute_average_error(self.test_set)
+        validation_error = self._compute_average_error(self.validation_set)
 
-    def evaluate(self) -> float:
-        """
-        Evaluate the agent's performance on the validation dataset.
+        return {
+            "test_error": test_error,
+            "validation_error": validation_error
+        }
 
-        Returns:
-            float: The average difference between predicted and actual Q-values.
-        """
-        total_difference = 0.0
-        num_samples = len(self.validation_data)
+    def _compute_average_error(self, experiences: List[ExperienceData]) -> float:
+        total_error = 0.0
+        loss_fn = nn.MSELoss()
 
-        for experience in self.validation_data:
-            state, action, reward, next_state, done = experience
+        for experience in experiences:
+            # Compute Q-value for the current state-action pair
+            state_action = torch.cat((experience.state.unsqueeze(0), experience.action.unsqueeze(0)), dim=1)
+            predicted_q_value = self.model(state_action).squeeze()
 
-            # Convert numpy arrays to tensors
-            state_tensor = torch.FloatTensor(state).unsqueeze(0)
-            action_tensor = torch.FloatTensor(action).unsqueeze(0)
-            next_state_tensor = torch.FloatTensor(next_state).unsqueeze(0)
+            # Use the reward as the target Q-value since we have a 1D reward
+            target_q_value = experience.reward.squeeze()
 
-            # Get the predicted Q-value from the agent for the state-action pair
-            state_action_combined = torch.cat((state_tensor, action_tensor), dim=1)
-            predicted_q_value = self.agent.q_network(state_action_combined).item()
+            # Calculate error between predicted Q-value and actual reward
+            error = loss_fn(predicted_q_value, target_q_value)
+            total_error += error.item()
 
-            # Calculate the expected Q-value
-            if done:
-                expected_q_value = reward  # No future simulation because the episode is done
-            else:
-                # Compute the maximum Q-value for the next state
-                next_q_values = [
-                    self.agent.q_network(torch.cat((next_state_tensor, torch.FloatTensor(move).unsqueeze(0)), dim=1)).item()
-                    for move in self.agent.replay_buffer
-                ]
-                max_next_q_value = max(next_q_values)
-                expected_q_value = reward + self.agent.gamma * max_next_q_value
-
-            # Accumulate the difference
-            total_difference += abs(predicted_q_value - expected_q_value)
-
-        # Return the average difference
-        return total_difference / num_samples
+        return total_error / len(experiences) if experiences else 0.0

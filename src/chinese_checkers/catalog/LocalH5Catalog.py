@@ -56,7 +56,7 @@ class LocalH5Catalog(ABC, Generic[M, D, DM]):
         """Appends records in batches to the dataset identified by the provided metadata keys."""
         total_batches = (len(data_metadata_list) + batch_size - 1) // batch_size  # Calculate total number of batches
 
-        for i in tqdm(range(0, len(data_metadata_list), batch_size), total=total_batches, desc="Adding records in batches"):
+        for i in tqdm(range(0, len(data_metadata_list), batch_size), total=total_batches, desc="Adding records in batches", disable=True):
             batch = data_metadata_list[i:i + batch_size]
             logger.info(f"Processing batch {i // batch_size + 1} of {total_batches}")
             for data_metadata in batch:

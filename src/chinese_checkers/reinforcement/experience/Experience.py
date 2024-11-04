@@ -7,7 +7,8 @@ from .ExperienceMetadata import ExperienceMetadata
 from ..encode import SpatialMoveMetricsEncoder, DistanceToWinRewardSimulationEncoder, SpatialBoardMetricsEncoder
 from ...catalog import IDataMetadata
 from ...game import ChineseCheckersGame
-from ...simulation import GameSimulation
+from ...simulation import GameSimulation, SimulationMetadata
+
 
 @dataclass(frozen=True)
 class Experience(IDataMetadata[ExperienceData, ExperienceMetadata]):
@@ -22,18 +23,18 @@ class Experience(IDataMetadata[ExperienceData, ExperienceMetadata]):
     @staticmethod
     def generate_experiences_from_simulation(
             simulation: GameSimulation,
-            metadata: ExperienceMetadata
+            generator_name: str
     ) -> List["Experience"]:
 
-        if metadata.generator_name == "v0.0.1":
-            return Experience._generate_experiences_v0_0_1(simulation, metadata)
+        if generator_name == "v0.0.1":
+            return Experience._generate_experiences_v0_0_1(simulation, generator_name)
         else:
-            raise ValueError(f"Unsupported encoder name '{metadata.generator_name}'")
+            raise ValueError(f"Unsupported encoder name '{generator_name}'")
 
     @staticmethod
     def _generate_experiences_v0_0_1(
             simulation: GameSimulation,
-            metadata: ExperienceMetadata
+            generator_name: str
     ) -> List["Experience"]:
         move_encoder = SpatialMoveMetricsEncoder()
         reward_encoder = DistanceToWinRewardSimulationEncoder()
@@ -59,7 +60,11 @@ class Experience(IDataMetadata[ExperienceData, ExperienceMetadata]):
                     next_state=board_state_encoder.encode(next_game_state),
                     done=is_terminal
                 ),
-                metadata
+                ExperienceMetadata.from_simulation_metadata(
+                    simulation.metadata,
+                    generator_name=generator_name,
+                    current_player= current_game_state.get_current_player().player_id,
+                )
             )
             experiences.append(experience)
 

@@ -1,14 +1,20 @@
+import logging
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import random
-import numpy as np
 from collections import deque
-from typing import Tuple, List
+from typing import List
+from torch import Tensor
+from .DqlNetwork import DQLNetwork
+from ..experience import ExperienceData
 
-from chinese_checkers.reinforcement.dql.DqlNetwork import DQLNetwork
+
 
 class DQLAgent:
+    logger = logging.getLogger(__name__)
     def __init__(self, state_dim: int, move_dim: int, gamma: float = 0.99,
                  lr: float = 0.001, epsilon_start: float = 1.0, epsilon_min: float = 0.1,
                  epsilon_decay: float = 0.995, buffer_size: int = 10000, batch_size: int = 64):
@@ -33,59 +39,55 @@ class DQLAgent:
         # Replay buffer
         self.replay_buffer = deque(maxlen=buffer_size)
 
-    def select_action(self, state: np.ndarray, possible_moves: List[np.ndarray]) -> int:
+    def select_action(self, state: Tensor, possible_moves: List[Tensor]) -> int:
         if random.random() < self.epsilon:
             return random.randint(0, len(possible_moves) - 1)  # Explore
 
-        state = torch.FloatTensor(state).unsqueeze(0)
-        move_tensors = [torch.FloatTensor(move).unsqueeze(0) for move in possible_moves]
+        state = state.unsqueeze(0)
+        q_values = [self.q_network(torch.cat((state, move.unsqueeze(0)), dim=1)).item() for move in possible_moves]
+        return int(np.argmax(q_values))
 
-        # Compute Q-values for each move and select the best one
-        q_values = [self.q_network(torch.cat((state, move), dim=1)).item() for move in move_tensors]
-        return np.argmax(q_values)
-
-    def store_experience(self, experience: Tuple[np.ndarray, np.ndarray, float, np.ndarray, bool]):
+    def store_experience(self, experience: ExperienceData):
         self.replay_buffer.append(experience)
 
-    def sample_experiences(self) -> List[Tuple[np.ndarray, np.ndarray, float, np.ndarray, bool]]:
+    def sample_experiences(self) -> List[ExperienceData]:
         return random.sample(self.replay_buffer, self.batch_size)
-
-    def _compute_next_q_values(self, next_states: torch.Tensor, actions: torch.Tensor) -> torch.Tensor:
-        # Compute the maximum Q-value for each next state
-        next_q_values = []
-        for next_state in next_states:
-            max_q_value = float('-inf')
-            for move in actions:
-                next_state_action = torch.cat((next_state.unsqueeze(0), move.unsqueeze(0)), dim=1)
-                q_value = self.target_network(next_state_action).item()
-                max_q_value = max(max_q_value, q_value)
-            next_q_values.append(max_q_value)
-        return torch.FloatTensor(next_q_values)
 
     def train(self):
         if len(self.replay_buffer) < self.batch_size:
             return  # Not enough samples to train
 
         batch = self.sample_experiences()
-        states, actions, rewards, next_states, dones = zip(*batch)
 
-        # Convert batch data to tensors
-        states = torch.FloatTensor(np.array(states))
-        actions = torch.FloatTensor(np.array(actions))
-        rewards = torch.FloatTensor(rewards)
-        next_states = torch.FloatTensor(np.array(next_states))
-        dones = torch.FloatTensor(dones)
+        # Extract data and convert to tensors
+        states = torch.stack([exp.state for exp in batch])
+        actions = torch.stack([exp.action for exp in batch])
+        rewards = torch.stack([exp.reward for exp in batch]).view(-1, 1)  # Shape (batch_size, 1)
+        next_states = torch.stack([exp.next_state for exp in batch])
+        dones = torch.stack([exp.done for exp in batch]).view(-1, 1)  # Shape (batch_size, 1)
+
+        self.logger.info(f"states shape: {states.shape}")
+        self.logger.info(f"actions shape: {actions.shape}")
+        self.logger.info(f"rewards shape: {rewards.shape}")
+        self.logger.info(f"next_states shape: {next_states.shape}")
+        self.logger.info(f"dones shape: {dones.shape}")
 
         # Compute Q-values for current state-action pairs
         state_actions = torch.cat((states, actions), dim=1)
-        q_values = self.q_network(state_actions).squeeze()
+        q_values = self.q_network(state_actions)
+        self.logger.info(f"q_values shape: {q_values.shape}")
 
-        # Compute target Q-values using the helper function
-        next_q_values = self._compute_next_q_values(next_states, actions)
+        # Compute target Q-values for next states
+        next_q_values = self._compute_batched_next_q_values(next_states, actions).view(-1, 1)  # Shape (batch_size, 1)
+        self.logger.info(f"next_q_values shape: {next_q_values.shape}")
+
+        # Calculate target Q-values
         target_q_values = rewards + self.gamma * next_q_values * (1 - dones)
+        self.logger.info(f"target_q_values shape: {target_q_values.shape}")
 
-        # Calculate loss and perform optimization step
+        # Calculate loss and optimize
         loss = nn.MSELoss()(q_values, target_q_values.detach())
+        self.logger.info(f"loss: {loss.item()}")
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
@@ -93,10 +95,20 @@ class DQLAgent:
         # Update epsilon for exploration
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
 
-        # Periodic update of target network weights
+        # Periodic target network update
         if random.randint(1, 100) <= 10:
             self.target_network.load_state_dict(self.q_network.state_dict())
 
-    def run_training_sample(self, encoded_sample: Tuple[np.ndarray, np.ndarray, float, np.ndarray, bool]):
-        self.store_experience(encoded_sample)
-        self.train()
+    def _compute_batched_next_q_values(self, next_states: Tensor, actions: Tensor) -> Tensor:
+        # Compute Q-values for each action in the next states and take max over actions
+        all_q_values = []
+        for move in actions:
+            next_state_actions = torch.cat((next_states, move.unsqueeze(0).expand(next_states.size(0), -1)), dim=1)
+            q_values = self.target_network(next_state_actions)  # Shape: (batch_size, 1)
+            all_q_values.append(q_values)
+
+        # Stack all Q-values along a new dimension and find the max along that dimension
+        all_q_values = torch.stack(all_q_values, dim=1)  # Shape: (batch_size, num_actions, 1)
+        max_q_values, _ = torch.max(all_q_values, dim=1)  # Shape: (batch_size, 1)
+
+        return max_q_values

@@ -1,28 +1,19 @@
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
 from chinese_checkers.simulation import SimulationMetadata
 
 @dataclass(frozen=True)
 class ExperienceMetadata(SimulationMetadata):
     generator_name: str
+    current_player: str
 
     def to_path(self) -> Path:
-        """Generates a file path one level deeper than SimulationMetadata, adding generator_name as a subdirectory."""
-        base_path = super().to_path()  # Get path from SimulationMetadata
-        return base_path / f'generator_name={self.generator_name}'
+        """Generates a file path one level deeper than SimulationMetadata, adding generator_name and current_player as subdirectories."""
+        base_path = super().to_path()
+        return base_path / f'generator_name={self.generator_name}' / f'current_player={self.current_player}'
 
     @classmethod
-    def from_simulation_metadata(cls, simulation_metadata: SimulationMetadata, generator_name: str) -> "ExperienceMetadata":
-        """
-        Creates an ExperienceMetadata instance from a SimulationMetadata instance and a generator_name.
-
-        Args:
-            simulation_metadata (SimulationMetadata): The existing simulation metadata.
-            generator_name (str): The name of the generator to include in the experience metadata.
-
-        Returns:
-            ExperienceMetadata: A new instance of ExperienceMetadata with the provided generator name.
-        """
+    def from_simulation_metadata(cls, simulation_metadata: SimulationMetadata, generator_name: str, current_player: str) -> "ExperienceMetadata":
         return cls(
             player_count=simulation_metadata.player_count,
             board_size=simulation_metadata.board_size,
@@ -30,5 +21,6 @@ class ExperienceMetadata(SimulationMetadata):
             winning_player=simulation_metadata.winning_player,
             name=simulation_metadata.name,
             version=simulation_metadata.version,
-            generator_name=generator_name
+            generator_name=generator_name,
+            current_player=current_player
         )

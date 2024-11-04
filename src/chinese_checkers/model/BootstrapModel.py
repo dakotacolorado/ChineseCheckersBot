@@ -8,6 +8,19 @@ from ..geometry.Vector import Vector
 
 
 class BootstrapModel(IModel):
+    def __init__(self, target_skip_chance: float = 0.05, priority_skip_chance: float = 0.1, dont_fail: bool = False):
+        """
+        Initializes the BootstrapModel with configurable randomness for move selection.
+
+        Args:
+            target_skip_chance (float): Probability of skipping moves where a piece starts
+                                        in the current player's target positions. Default is 0.05.
+            priority_skip_chance (float): Probability of skipping non-priority moves even if
+                                          priority moves exist. Default is 0.1.
+        """
+        self.target_skip_chance = target_skip_chance
+        self.priority_skip_chance = priority_skip_chance
+        self.dont_fail = dont_fail
 
     def _chose_next_move(self, game: ChineseCheckersGame) -> Move:
         """
@@ -46,16 +59,12 @@ class BootstrapModel(IModel):
         closest_distance = float('inf')
         best_moves = []
 
-        # Order target positions by distance from the board center
-        # Bias the model towards filling target positions closer to starting pieces
         nearest_target_positions = sorted(
             current_player.target_positions,
             key=lambda p: p.distance(Vector(0, 0)),
             reverse=True
         )[0]
 
-        # List positions that are target positions for other players.
-        # Ensure our model avoids these to prevent a draw.
         other_players_targets = [
             position
             for player in other_players
@@ -69,18 +78,15 @@ class BootstrapModel(IModel):
         ]
 
         for move in moves:
-            # Skip moves where the piece starts in one of the current player's target positions
-            if move.position in current_player.target_positions and random.random() > 0.05:
+            if move.position in current_player.target_positions and random.random() > self.target_skip_chance:
                 continue
 
-            # Prefer priority moves if any exist
-            if priority_positions and move.position not in priority_positions and random.random() > 0.1:
+            if priority_positions and move.position not in priority_positions and random.random() > self.priority_skip_chance:
                 continue
 
             new_position = move.apply()
             distance = new_position.distance(nearest_target_positions)
 
-            # Find moves that bring a piece closest to the target position
             if distance < closest_distance:
                 closest_distance = distance
                 best_moves = [move]
@@ -88,6 +94,9 @@ class BootstrapModel(IModel):
                 best_moves.append(move)
 
         if not best_moves:
-            raise Exception("No viable move found")
+            if self.dont_fail:
+                return choice(moves)
+            else:
+                raise Exception("No viable move found")
 
         return choice(best_moves)
