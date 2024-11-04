@@ -9,6 +9,8 @@ from .game import IChineseCheckersGameEncoder
 
 from .move import IMoveEncoder
 
+from .simulation import ISimulationEncoder
+
 __all__ = [
     "EncoderMetadata",
     "EncoderRegistry",
@@ -17,4 +19,5 @@ __all__ = [
     "IExperienceEncoder",
     "IChineseCheckersGameEncoder",
     "IMoveEncoder",
+    "ISimulationEncoder",
 ]

@@ -3,9 +3,9 @@ from typing import Tuple
 import numpy as np
 import torch
 from ...simulation import GameSimulation
-from .ISimulationRewardEncoder import ISimulationRewardEncoder
+from .ISimulationEncoder import ISimulationEncoder
 
-class DistanceToWinRewardStrategyEncoder(ISimulationRewardEncoder):
+class DistanceToWinRewardSimulationEncoder(ISimulationEncoder):
     """
     Reward strategy encoder that calculates a reward based on the speed of winning or losing the game,
     returning a tensor of rewards for each turn up to max_game_length, with an additional dimension representing

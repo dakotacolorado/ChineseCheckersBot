@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from unittest.mock import MagicMock
-from src.chinese_checkers.encoder.simulation.DistanceToWinRewardStrategyEncoder import DistanceToWinRewardStrategyEncoder
+from src.chinese_checkers.encoder.simulation.DistanceToWinRewardSimulationEncoder import DistanceToWinRewardSimulationEncoder
 from src.chinese_checkers.simulation import GameSimulation, SimulationMetadata, SimulationData
 from src.chinese_checkers.game import Position, Move
 
@@ -40,7 +40,7 @@ class TestDistanceToWinRewardStrategyEncoder(unittest.TestCase):
         return GameSimulation(metadata=metadata, data=data)
 
     def test_encode_reward_for_winning_player_with_overlap(self):
-        encoder = DistanceToWinRewardStrategyEncoder()
+        encoder = DistanceToWinRewardSimulationEncoder()
         simulation = self.create_simulation(turn_count=5, winning=True, overlaps=1)
 
         reward_tensor = encoder.encode(simulation)
@@ -53,7 +53,7 @@ class TestDistanceToWinRewardStrategyEncoder(unittest.TestCase):
         np.testing.assert_almost_equal(reward_tensor.numpy(), expected_matrix, decimal=5)
 
     def test_encode_reward_for_losing_player_with_overlap(self):
-        encoder = DistanceToWinRewardStrategyEncoder()
+        encoder = DistanceToWinRewardSimulationEncoder()
         simulation = self.create_simulation(turn_count=5, winning=False, overlaps=1)
 
         reward_tensor = encoder.encode(simulation)
@@ -66,7 +66,7 @@ class TestDistanceToWinRewardStrategyEncoder(unittest.TestCase):
         np.testing.assert_almost_equal(reward_tensor.numpy(), expected_matrix, decimal=5)
 
     def test_reward_matrix_padding_for_early_game_end_with_no_overlap(self):
-        encoder = DistanceToWinRewardStrategyEncoder()
+        encoder = DistanceToWinRewardSimulationEncoder()
         simulation = self.create_simulation(turn_count=3, winning=True, overlaps=0)
 
         reward_tensor = encoder.encode(simulation)
@@ -79,7 +79,7 @@ class TestDistanceToWinRewardStrategyEncoder(unittest.TestCase):
         np.testing.assert_almost_equal(reward_tensor.numpy(), expected_matrix, decimal=5)
 
     def test_encode_with_variable_overlap_count(self):
-        encoder = DistanceToWinRewardStrategyEncoder()
+        encoder = DistanceToWinRewardSimulationEncoder()
         simulation = self.create_simulation(turn_count=4, winning=True, overlaps=2)
 
         reward_tensor = encoder.encode(simulation)

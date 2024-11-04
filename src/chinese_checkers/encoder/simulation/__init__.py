@@ -1,7 +1,7 @@
-from .ISimulationRewardEncoder import ISimulationRewardEncoder
+from .ISimulationEncoder import ISimulationEncoder
 from .SimulationEncoderFactory import SimulationRewardEncoderFactory
 
 __all__ = [
-    'ISimulationRewardEncoder',
+    'ISimulationEncoder',
     'SimulationRewardEncoderFactory',
 ]

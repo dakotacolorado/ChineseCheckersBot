@@ -1,6 +1,6 @@
 import unittest
 from src.chinese_checkers.encoder.simulation.SimulationEncoderFactory import SimulationRewardEncoderFactory
-from src.chinese_checkers.encoder.simulation.DistanceToWinRewardStrategyEncoder import DistanceToWinRewardStrategyEncoder
+from src.chinese_checkers.encoder.simulation.DistanceToWinRewardSimulationEncoder import DistanceToWinRewardSimulationEncoder
 
 class TestSimulationRewardEncoderFactory(unittest.TestCase):
 
@@ -9,7 +9,7 @@ class TestSimulationRewardEncoderFactory(unittest.TestCase):
 
     def test_create_distance_to_win_reward_strategy(self):
         encoder = self.factory.create("distance_to_win_reward_strategy")
-        self.assertIsInstance(encoder, DistanceToWinRewardStrategyEncoder,
+        self.assertIsInstance(encoder, DistanceToWinRewardSimulationEncoder,
                               "Expected factory to create an instance of DistanceToWinRewardStrategyEncoder")
 
     def test_invalid_encoder_name(self):

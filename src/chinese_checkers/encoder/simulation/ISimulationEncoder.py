@@ -4,7 +4,7 @@ from typing import Type
 from .. import IEncoder
 from ...simulation import GameSimulation
 
-class ISimulationRewardEncoder(IEncoder[GameSimulation], ABC):
+class ISimulationEncoder(IEncoder[GameSimulation], ABC):
     """
     Interface for reward encoders that calculate a reward based on the state of a GameSimulation.
     """
