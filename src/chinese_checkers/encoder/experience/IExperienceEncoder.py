@@ -1,11 +1,15 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 import torch
-from ..IEncoder import IEncoder
+from typing_extensions import Generic, TypeVar
+
+from ..ITensorEncoder import ITensorEncoder
 from ...experience import Experience
 
+T = TypeVar('T')
+S = TypeVar('S')
 
-class IExperienceEncoder(IEncoder[Experience], ABC):
+class IExperienceEncoder(ITensorEncoder[Experience, T, S], ABC, Generic[T, S]):
     """
     Interface for encoders that encode an experience tuple into a format suitable for a DQN model.
     """

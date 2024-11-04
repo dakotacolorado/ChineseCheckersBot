@@ -1,10 +1,11 @@
 from typing import Tuple
 import torch
 from .IMoveEncoder import IMoveEncoder
-from ...game.Move import Move
+from ..ITensorEncoder import ITensorEncoder
+from ...game import Move
 
 
-class BasicMoveEncoder(IMoveEncoder):
+class BasicMoveEncoder(IMoveEncoder[Move, torch.Tensor], ITensorEncoder[Move]):
     """
     Encodes moves in Chinese Checkers, converting them into start and end coordinates as a tensor.
     Also provides a dummy action for padding purposes when fewer moves are available.

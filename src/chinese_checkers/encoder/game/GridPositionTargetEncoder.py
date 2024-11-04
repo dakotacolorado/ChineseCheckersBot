@@ -3,13 +3,13 @@ from typing import Tuple
 
 import torch
 
+from ..ITensorEncoder import ITensorEncoder
 from ..move.IMoveEncoder import IMoveEncoder
 from .BaseChineseCheckersGameEncoder import BaseChineseCheckersGameEncoder
 from ...game import ChineseCheckersGame
 
 
 class GridPositionTargetEncoder(BaseChineseCheckersGameEncoder):
-
     def __init__(
             self,
             move_encoder: IMoveEncoder,

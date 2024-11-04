@@ -1,10 +1,15 @@
 from abc import ABC
 from typing import Type
 
-from .. import IEncoder
+from typing_extensions import Generic, TypeVar
+
+from ..IEncoder import IEncoder
 from ...simulation import GameSimulation
 
-class ISimulationEncoder(IEncoder[GameSimulation], ABC):
+T = TypeVar('T')
+S = TypeVar('S')
+
+class ISimulationEncoder(IEncoder[GameSimulation, T, S], ABC, Generic[T, S]):
     """
     Interface for reward encoders that calculate a reward based on the state of a GameSimulation.
     """

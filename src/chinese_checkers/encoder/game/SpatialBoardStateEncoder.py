@@ -2,10 +2,11 @@ from typing import Tuple
 import torch
 import numpy as np
 from .IChineseCheckersGameEncoder import IChineseCheckersGameEncoder
+from ..ITensorEncoder import ITensorEncoder
 from ...game.ChineseCheckersGame import ChineseCheckersGame
 
 
-class SpatialBoardStateEncoder(IChineseCheckersGameEncoder):
+class SpatialBoardStateEncoder(IChineseCheckersGameEncoder[ChineseCheckersGame, torch.Tensor], ITensorEncoder[ChineseCheckersGame]):
     def __init__(self, board_size: int):
         """
         Initializes the encoder with the given board size (radius).
@@ -15,6 +16,13 @@ class SpatialBoardStateEncoder(IChineseCheckersGameEncoder):
         """
         self.board_size = board_size
         self.board_dim = 2 * board_size + 1  # Calculate board dimension
+
+    @property
+    def shape(self) -> Tuple[int, ...]:
+        """
+        Returns the shape of the encoded board state: (3, board_dim, board_dim).
+        """
+        return 3, self.board_dim, self.board_dim
 
     def encode(self, game: ChineseCheckersGame) -> torch.Tensor:
         """
@@ -50,9 +58,3 @@ class SpatialBoardStateEncoder(IChineseCheckersGameEncoder):
 
         return torch.tensor(board_tensor)
 
-    @property
-    def shape(self) -> Tuple[int, ...]:
-        """
-        Returns the shape of the encoded board state: (3, board_dim, board_dim).
-        """
-        return (3, self.board_dim, self.board_dim)

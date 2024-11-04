@@ -1,15 +1,18 @@
 from abc import ABC, abstractmethod
+from typing import List, Generic, TypeVar
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Generic, Tuple, TypeVar
-import torch
 from tqdm import tqdm
 import concurrent
+import torch
 
+# input type T, output type S, output shape U
 T = TypeVar('T')
+S = TypeVar('S')
+U = TypeVar('U')
 
-class IEncoder(ABC, Generic[T]):
+class IEncoder(ABC, Generic[T, S, U]):
     """
-    Generic interface for encoders. Encodes an object of type T into a torch.Tensor.
+    Generic interface for encoders. Encodes an object of type T into a tensor of type S.
     """
 
     @property
@@ -22,29 +25,30 @@ class IEncoder(ABC, Generic[T]):
 
     @property
     @abstractmethod
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> U:
         """
-        Returns the shape of the output tensor from the encoding.
+        Defines the shape of the encoded torch.Tensor.
 
         Returns:
-            Tuple[int, ...]: Shape of the encoded torch.Tensor.
+            Tuple[int, ...]: The shape of the output tensor, where each integer represents
+                             the size of a specific dimension.
         """
         pass
 
     @abstractmethod
-    def encode(self, obj: T) -> torch.Tensor:
+    def encode(self, obj: T) -> S:
         """
-        Encodes an object of type T into a torch.Tensor.
+        Encodes an object of type T into a tensor of type S.
 
         Args:
             obj (T): The object to encode.
 
         Returns:
-            torch.Tensor: The encoded representation of the object.
+            S: The encoded representation of the object as a tensor.
         """
         pass
 
-    def batch_encode(self, objs: List[T], batch_size: int) -> List[torch.Tensor]:
+    def batch_encode(self, objs: List[T], batch_size: int) -> List[S]:
         """
         Encodes a list of objects in batches and parallelizes the process.
 
@@ -53,7 +57,7 @@ class IEncoder(ABC, Generic[T]):
             batch_size (int): The number of objects to process in a single batch.
 
         Returns:
-            List[torch.Tensor]: A list of encoded tensors.
+            List[S]: A list of encoded tensors.
         """
         encoded_objs = []
 
@@ -70,7 +74,7 @@ class IEncoder(ABC, Generic[T]):
 
         return encoded_objs
 
-    def _encode_batch(self, batch: List[T]) -> List[torch.Tensor]:
+    def _encode_batch(self, batch: List[T]) -> List[S]:
         """
         Encodes a single batch of objects.
 
@@ -78,6 +82,6 @@ class IEncoder(ABC, Generic[T]):
             batch (List[T]): A batch of objects to encode.
 
         Returns:
-            List[torch.Tensor]: A list of encoded tensors.
+            List[S]: A list of encoded tensors.
         """
         return [self.encode(obj) for obj in batch]

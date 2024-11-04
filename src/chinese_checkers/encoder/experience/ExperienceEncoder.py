@@ -3,12 +3,13 @@ from typing import Tuple
 import torch
 
 from .IExperienceEncoder import IExperienceEncoder
+from ..ITensorEncoder import ITensorEncoder
 from ..game import IChineseCheckersGameEncoder
 from ..move import IMoveEncoder
 from ...experience import Experience
 
 
-class ExperienceEncoder(IExperienceEncoder):
+class ExperienceEncoder(IExperienceEncoder, ITensorEncoder[Experience, torch.Tensor]):
     """
     Encodes an experience tuple into a format suitable for a DQN model.
 

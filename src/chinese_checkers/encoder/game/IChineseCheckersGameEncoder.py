@@ -1,12 +1,13 @@
-from abc import ABC, abstractmethod
-from typing import Tuple
-import torch
+from abc import ABC
+from typing import TypeVar, Generic
 
 from ..IEncoder import IEncoder
 from ...game import ChineseCheckersGame
 
+T = TypeVar('T')
+S = TypeVar('S')
 
-class IChineseCheckersGameEncoder(IEncoder[ChineseCheckersGame], ABC):
+class IChineseCheckersGameEncoder(IEncoder[ChineseCheckersGame, T, S], ABC, Generic[T, S]):
     """
     Base interface for all Chinese Checkers game encoders.
     """
@@ -18,23 +19,3 @@ class IChineseCheckersGameEncoder(IEncoder[ChineseCheckersGame], ABC):
         """
         return ChineseCheckersGame
 
-    @property
-    @abstractmethod
-    def shape(self) -> Tuple[int, ...]:
-        """
-        Returns the shape of the output tensor from the encoding.
-        """
-        pass
-
-    @abstractmethod
-    def encode(self, game: ChineseCheckersGame) -> torch.Tensor:
-        """
-        Encodes a `ChineseCheckersGame` state into a torch.Tensor.
-
-        Args:
-            game (ChineseCheckersGame): The game state to encode.
-
-        Returns:
-            torch.Tensor: The encoded game state.
-        """
-        pass

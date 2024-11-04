@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
 import torch
 from typing import Tuple
+
+from ..ITensorEncoder import ITensorEncoder
 from ..move import IMoveEncoder
 from .IChineseCheckersGameEncoder import IChineseCheckersGameEncoder
 from ...game import ChineseCheckersGame
 
 
-class BaseChineseCheckersGameEncoder(IChineseCheckersGameEncoder, ABC):
+class BaseChineseCheckersGameEncoder(IChineseCheckersGameEncoder[ChineseCheckersGame, torch.Tensor], ITensorEncoder[ChineseCheckersGame]):
     # Shape for one-hot encoded player ID vector
     PLAYER_ID_SHAPE: Tuple[int] = (6,)
 

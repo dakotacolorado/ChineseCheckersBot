@@ -2,10 +2,11 @@ import logging
 from typing import Tuple, List
 import torch
 from .IChineseCheckersGameEncoder import IChineseCheckersGameEncoder
+from ..ITensorEncoder import ITensorEncoder
 from ...game import ChineseCheckersGame, Player, Position
 
 
-class SpatialBoardMetricsEncoder(IChineseCheckersGameEncoder):
+class SpatialBoardMetricsEncoder(IChineseCheckersGameEncoder[ChineseCheckersGame, torch.Tensor], ITensorEncoder[ChineseCheckersGame]):
     """
     Encodes spatial metrics of the board into a tensor with the following normalized metrics:
     - Centroid distance from target for the current player
@@ -19,10 +20,6 @@ class SpatialBoardMetricsEncoder(IChineseCheckersGameEncoder):
 
     def __init__(self, board_size: int):
         self.board_size = board_size
-
-    @property
-    def input_type(self) -> type:
-        return ChineseCheckersGame
 
     @property
     def shape(self) -> Tuple[int, ...]:
