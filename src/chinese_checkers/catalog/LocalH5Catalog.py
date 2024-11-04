@@ -1,17 +1,20 @@
 from pathlib import Path
 import logging
-from typing import List, Type, TypeVar, Generic, Iterator
+from typing import List, Type, TypeVar, Generic
 from abc import ABC, abstractmethod
 import h5py
+from tqdm import tqdm  # Import tqdm for progress bar
 from .IMetadata import IMetadata
 from .IData import IData
+from .IDataMetadata import IDataMetadata
 
 logger = logging.getLogger(__name__)
 
 M = TypeVar('M', bound=IMetadata)
 D = TypeVar('D', bound=IData)
+DM = TypeVar('DM', bound=IDataMetadata[D, M])
 
-class LocalH5Catalog(ABC, Generic[M, D]):
+class LocalH5Catalog(ABC, Generic[M, D, DM]):
     def __init__(self, catalog_directory: str = "D:/chinese_checkers_games"):
         self.catalog_path = Path(catalog_directory)
         self.catalog_path.mkdir(parents=True, exist_ok=True)
@@ -35,34 +38,51 @@ class LocalH5Catalog(ABC, Generic[M, D]):
         """The concrete data class to be used in the catalog."""
         ...
 
+    @property
+    @abstractmethod
+    def data_metadata_cls(self) -> Type[DM]:
+        """The concrete data-metadata class to be used in the catalog."""
+        ...
+
     def _construct_path(self, metadata: M) -> Path:
         """Constructs the path for the dataset based on metadata."""
         return self.catalog_path.joinpath(metadata.to_path(), self.filename)
 
-    def create_dataset(self, metadata: M) -> None:
-        """Creates a new dataset identified by the provided metadata if it does not exist."""
-        file_path = self._construct_path(metadata)
+    def add_record(self, data_metadata: DM) -> None:
+        """Appends a single record to the dataset identified by the provided metadata key."""
+        self._add_record_internal(data_metadata)
+
+    def add_record_list(self, data_metadata_list: List[DM], batch_size: int = 1000) -> None:
+        """Appends records in batches to the dataset identified by the provided metadata keys."""
+        total_batches = (len(data_metadata_list) + batch_size - 1) // batch_size  # Calculate total number of batches
+
+        for i in tqdm(range(0, len(data_metadata_list), batch_size), total=total_batches, desc="Adding records in batches"):
+            batch = data_metadata_list[i:i + batch_size]
+            logger.info(f"Processing batch {i // batch_size + 1} of {total_batches}")
+            for data_metadata in batch:
+                self._add_record_internal(data_metadata)
+
+    def _add_record_internal(self, data_metadata: DM) -> None:
+        """Internal helper to append a record to the dataset, creating files and directories as needed."""
+        file_path = self._construct_path(data_metadata.metadata)
+        storable_data = data_metadata.data.to_storable()
+
+        # Ensure the directory and file exist before adding the record
+        file_path.parent.mkdir(parents=True, exist_ok=True)
         if not file_path.exists():
-            file_path.parent.mkdir(parents=True, exist_ok=True)
             with h5py.File(file_path, 'w') as _:
-                pass  # Creates an empty HDF5 file
-            logger.info(f"Created new dataset for metadata {metadata}")
-        else:
-            logger.info(f"Dataset already exists for metadata {metadata}")
+                pass
+            logger.info(f"Created new dataset for metadata {data_metadata.metadata}")
 
-    def add_record(self, metadata: M, record: D) -> None:
-        """Appends a record to the dataset identified by the provided metadata key."""
-        file_path = self._construct_path(metadata)
-        storable_data = record.to_storable()
-
+        # Append the record to the file
         with h5py.File(file_path, 'a') as h5file:
             group = h5file.create_group(f'data_{len(h5file.keys())}')
             for key, value in storable_data.items():
                 group.create_dataset(key, data=value)
 
-        logger.info(f"Added record to dataset with metadata {metadata}")
+        logger.info(f"Added record to dataset with metadata {data_metadata.metadata}")
 
-    def load_dataset(self, metadata: M) -> List[D]:
+    def load_dataset(self, metadata: M) -> List[DM]:
         """Loads all records associated with the specified metadata key."""
         dataset_path = self._construct_path(metadata)
 
@@ -75,7 +95,7 @@ class LocalH5Catalog(ABC, Generic[M, D]):
             for key in h5file.keys():
                 group = h5file[key]
                 storable_data = {k: group[k][:] for k in group.keys()}
-                records.append(self.data_cls.from_storable(storable_data))
+                records.append(self.data_metadata_cls.from_data_metadata(self.data_cls.from_storable(storable_data), metadata))
 
         return records
 
@@ -84,17 +104,20 @@ class LocalH5Catalog(ABC, Generic[M, D]):
         dataset_paths = list(self.catalog_path.rglob(self.filename))
         return [self._extract_metadata_from_path(path.parent, self.metadata_cls) for path in dataset_paths]
 
-    @staticmethod
-    def _extract_metadata_from_path(directory_path: Path, metadata_cls: Type[M]) -> M:
+    @classmethod
+    def _extract_metadata_from_path(cls, directory_path: Path, metadata_cls: Type[M]) -> M:
         """Extracts metadata from a directory path using the metadata class's structure with type conversion."""
         try:
             parts = {part.split('=')[0]: part.split('=')[1] for part in directory_path.parts if '=' in part}
             metadata_fields = metadata_cls.__annotations__
 
-            # Convert each part to the appropriate type based on metadata_cls field types
+            # Ensure type consistency based on metadata_cls field types
             for key, value in parts.items():
-                if key in metadata_fields and metadata_fields[key] == int:
-                    parts[key] = int(value)
+                if key in metadata_fields:
+                    # Convert to int if required by the field annotation
+                    field_type = metadata_fields[key]
+                    if field_type == int:
+                        parts[key] = int(value)
 
             return metadata_cls(**parts)
         except (IndexError, ValueError, TypeError) as e:

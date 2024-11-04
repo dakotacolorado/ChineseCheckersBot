@@ -1,22 +1,23 @@
 from typing import List, Protocol
 
+from .IData import IData
+from .IDataMetadata import IDataMetadata
 from .IMetadata import IMetadata
 
 
 class ICatalog(Protocol):
-    def create_dataset(self, metadata: "IMetadata") -> None:
-        """Creates a new dataset identified by the provided metadata.
-        If a dataset with this metadata already exists, it remains unchanged."""
-        ...
-
-    def add_record(self, metadata: "IMetadata", record: any) -> None:
+    def add_record(self, data_metadata: IDataMetadata) -> None:
         """Appends a record to the dataset identified by the provided metadata key."""
         ...
 
-    def load_dataset(self, metadata: "IMetadata") -> List:
+    def add_record_list(self, data_metadata_list: List[IDataMetadata], batch_size: int = 1000) -> None:
+        """Appends records in batches to the dataset identified by the provided metadata keys."""
+        ...
+
+    def load_dataset(self, metadata: IMetadata) -> List[IDataMetadata]:
         """Retrieves all records associated with the specified metadata key."""
         ...
 
-    def list_datasets(self) -> List["IMetadata"]:
+    def list_datasets(self) -> List[IMetadata]:
         """Returns a list of metadata keys currently available in the catalog."""
         ...

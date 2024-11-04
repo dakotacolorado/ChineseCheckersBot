@@ -1,30 +1,17 @@
 import logging
-from typing import Tuple
-
-import numpy as np
+from typing import List
 import torch
-
 from chinese_checkers.simulation import GameSimulation
 
-class DistanceToWinRewardSimulationEncoder(ISimulationEncoder):
-    """
-    Reward strategy encode that calculates a reward based on the speed of winning or losing the game,
-    returning a tensor of rewards for each turn up to max_game_length, with an additional dimension representing
-    the count of overlapping positions with the target positions.
-    """
-
-    @property
-    def shape(self) -> Tuple[int, ...]:
-        return (2,)
-
+class DistanceToWinRewardSimulationEncoder:
     logger = logging.getLogger(__name__)
 
-    @property
-    def cols(self) -> int:
-        """Returns the number of columns in the encode output, which is 2 (reward and overlap count)."""
-        return 2
+    """
+    Reward strategy encoder that calculates a reward based on the speed of winning or losing the game,
+    returning a list of tensors, each of size 2, representing the reward and overlap count for each turn.
+    """
 
-    def encode(self, simulation: GameSimulation) -> torch.Tensor:
+    def encode(self, simulation: GameSimulation) -> List[torch.Tensor]:
         """
         Encodes the reward and position overlap count for each turn in the game simulation.
 
@@ -32,26 +19,25 @@ class DistanceToWinRewardSimulationEncoder(ISimulationEncoder):
             simulation (GameSimulation): The simulation state to evaluate for reward calculation.
 
         Returns:
-            torch.Tensor: A tensor of shape (max_game_length, 2) representing the reward and position overlap count.
+            List[torch.Tensor]: A list of tensors, each of size 2, representing the reward and position overlap count.
         """
         max_game_length = simulation.metadata.max_game_length
         turn_count = len(simulation.data.historical_moves)
 
         self.logger.debug(f"Encoding rewards for GameSimulation with max_game_length={max_game_length}")
 
-        reward_matrix = np.zeros((max_game_length, self.cols), dtype=np.float32)
+        reward_list = []
 
         for turn_index in range(turn_count):
             reward = self._calculate_turn_reward(simulation, turn_index)
             overlap_count = self._calculate_position_overlap(simulation)
 
-            reward_matrix[turn_index, 0] = reward
-            reward_matrix[turn_index, 1] = overlap_count
+            reward_tensor = torch.tensor([reward, overlap_count], dtype=torch.float32)
+            reward_list.append(reward_tensor)
 
-        reward_tensor = torch.tensor(reward_matrix, dtype=torch.float32)
-        self.logger.debug(f"Final reward tensor: {reward_tensor}")
+        self.logger.debug(f"Final reward list: {reward_list}")
 
-        return reward_tensor
+        return reward_list
 
     def _calculate_turn_reward(self, simulation: GameSimulation, turn_index: int) -> float:
         """

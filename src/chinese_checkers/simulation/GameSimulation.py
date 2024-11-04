@@ -9,12 +9,13 @@ from .SimulationData import SimulationData
 from .SimulationMetadata import SimulationMetadata
 from ..game.ChineseCheckersGame import ChineseCheckersGame
 from ..model.IModel import IModel
+from ..catalog import IDataMetadata
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
-class GameSimulation:
+class GameSimulation(IDataMetadata[SimulationData, SimulationMetadata]):
     """Represents a game simulation, including metadata and simulation data.
 
     Attributes:
@@ -24,6 +25,11 @@ class GameSimulation:
 
     metadata: SimulationMetadata
     data: SimulationData
+
+
+    @staticmethod
+    def from_data_metadata(data: SimulationData, metadata: SimulationMetadata) -> 'GameSimulation':
+        return GameSimulation(data=data, metadata=metadata)
 
     @staticmethod
     def simulate_game(
