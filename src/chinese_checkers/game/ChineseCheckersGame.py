@@ -80,10 +80,16 @@ class ChineseCheckersGame:
                 f"Invalid number of players: {len(players)}. "
                 f"Must be one of {valid_player_counts}."
             )
+
         self.players = players
         self.turn = turn
         self.board = board
         self.printer = printer
+
+        # Validate that all players have unique positions
+        all_positions = self.get_all_positions()
+        if len(all_positions) != len(set(all_positions)):
+            raise ValueError("Players must have unique positions.")
 
     def __eq__(self, other: 'ChineseCheckersGame') -> bool:
         return self.players == other.players \

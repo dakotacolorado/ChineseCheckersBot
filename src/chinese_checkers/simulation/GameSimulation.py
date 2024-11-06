@@ -142,8 +142,6 @@ class GameSimulation(IDataMetadata[SimulationData, SimulationMetadata]):
             number_of_players=len(self.data.player_ids),
             board_size=self.metadata.board_size
         )
-        for player, start_positions in zip(game.players, self.data.player_start_positions):
-            player.positions = start_positions
 
         game_sequence = [game]
         current_turn = 0
