@@ -8,7 +8,7 @@ from ..geometry.Vector import Vector
 
 
 class BootstrapModel(IModel):
-    def __init__(self, target_skip_chance: float = 0.05, priority_skip_chance: float = 0.1, dont_fail: bool = False):
+    def __init__(self, target_skip_chance: float = 0.05, priority_skip_chance: float = 0.1, dont_fail: bool = False, random_noise: float = 0.0):
         """
         Initializes the BootstrapModel with configurable randomness for move selection.
 
@@ -21,6 +21,7 @@ class BootstrapModel(IModel):
         self.target_skip_chance = target_skip_chance
         self.priority_skip_chance = priority_skip_chance
         self.dont_fail = dont_fail
+        self.random_noise = random_noise
 
     def _chose_next_move(self, game: ChineseCheckersGame) -> Move:
         """
@@ -53,6 +54,8 @@ class BootstrapModel(IModel):
         Returns:
             Next move to make.
         """
+        if random.random() < self.random_noise:
+            return choice(game.get_next_moves())
         moves: List[Move] = game.get_next_moves()
         current_player: Player = game.get_current_player()
         other_players: List[Player] = game.get_other_players()
