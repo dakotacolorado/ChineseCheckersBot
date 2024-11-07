@@ -30,3 +30,11 @@ class Vector:
 
     def distance(self, other: 'Vector') -> float:
         return ((self.i - other.i) ** 2 + (self.j - other.j) ** 2) ** 0.5
+
+    def dot(self, other: 'Vector') -> float:
+        """Calculates the dot product with another vector."""
+        return self.i * other.i + self.j * other.j
+
+    def norm(self) -> float:
+        """Calculates the Euclidean norm (magnitude) of the vector."""
+        return (self.i ** 2 + self.j ** 2) ** 0.5

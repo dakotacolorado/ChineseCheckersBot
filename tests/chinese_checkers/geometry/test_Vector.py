@@ -1,5 +1,4 @@
 from unittest import TestCase
-
 from src.chinese_checkers.geometry.Vector import Vector
 
 
@@ -84,5 +83,14 @@ class TestVector(TestCase):
         self.assertEqual(v1.distance(v2), 5.0)
         self.assertEqual(v1.distance(v1), 0)
 
+    def test_dot_product(self):
+        v1 = Vector(1, 2)
+        v2 = Vector(3, 4)
+        self.assertEqual(v1.dot(v2), 11)  # 1*3 + 2*4 = 11
 
+    def test_norm(self):
+        v = Vector(3, 4)
+        self.assertEqual(v.norm(), 5.0)  # sqrt(3^2 + 4^2) = 5.0
 
+        v_zero = Vector(0, 0)
+        self.assertEqual(v_zero.norm(), 0.0)
