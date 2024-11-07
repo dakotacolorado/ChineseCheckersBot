@@ -106,7 +106,7 @@ class GameSimulation(IDataMetadata[SimulationData, SimulationMetadata]):
         if game.is_game_won():
             logger.info(f"Game won by player {game.get_winner().player_id} in {game.turn} turns.")
         else:
-            logger.warning(f"Game did not finish within the maximum of {max_turns} turns.")
+            logger.debug(f"Game did not finish within the maximum of {max_turns} turns.")
         return move_history, game
 
     @staticmethod
@@ -160,7 +160,7 @@ class GameSimulation(IDataMetadata[SimulationData, SimulationMetadata]):
         game_animation = GameSimulationAnimation(self._to_game_sequence(sample_period=sample_period))
         return game_animation.display()
 
-    def save_animation(self, file_path: str = None, sample_period: int = 10, fps: int = 10):
+    def save_animation(self, file_path: str = None, sample_period: int = 1, fps: int = 50):
         if file_path is None:
             file_path = f"{self.metadata.name}-{self.metadata.version}.mp4"
         logger.info(f"Saving game animation to {file_path}")
