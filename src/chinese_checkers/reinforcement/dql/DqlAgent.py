@@ -1,5 +1,4 @@
 import logging
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -12,12 +11,13 @@ from .DqlNetwork import DQLNetwork
 from ..experience import ExperienceData
 
 
-
 class DQLAgent:
     logger = logging.getLogger(__name__)
+
     def __init__(self, state_dim: int, move_dim: int, gamma: float = 0.99,
                  lr: float = 0.001, epsilon_start: float = 1.0, epsilon_min: float = 0.1,
-                 epsilon_decay: float = 0.995, buffer_size: int = 10000, batch_size: int = 64):
+                 epsilon_decay: float = 0.995, buffer_size: int = 10000, batch_size: int = 64,
+                 weight_decay: float = 1e-4):
         self.state_dim = state_dim
         self.move_dim = move_dim
         self.gamma = gamma
@@ -33,8 +33,8 @@ class DQLAgent:
         self.target_network.load_state_dict(self.q_network.state_dict())
         self.target_network.eval()
 
-        # Optimizer
-        self.optimizer = optim.Adam(self.q_network.parameters(), lr=lr)
+        # Optimizer with weight decay for L2 regularization
+        self.optimizer = optim.Adam(self.q_network.parameters(), lr=lr, weight_decay=weight_decay)
 
         # Replay buffer
         self.replay_buffer = deque(maxlen=buffer_size)
@@ -62,9 +62,9 @@ class DQLAgent:
         # Extract data and convert to tensors
         states = torch.stack([exp.state for exp in batch])
         actions = torch.stack([exp.action for exp in batch])
-        rewards = torch.stack([exp.reward for exp in batch]).view(-1, 1)  # Shape (batch_size, 1)
+        rewards = torch.stack([exp.reward for exp in batch]).view(-1, 1)
         next_states = torch.stack([exp.next_state for exp in batch])
-        dones = torch.stack([exp.done for exp in batch]).view(-1, 1)  # Shape (batch_size, 1)
+        dones = torch.stack([exp.done for exp in batch]).view(-1, 1)
 
         self.logger.info(f"states shape: {states.shape}")
         self.logger.info(f"actions shape: {actions.shape}")
@@ -78,14 +78,14 @@ class DQLAgent:
         self.logger.info(f"q_values shape: {q_values.shape}")
 
         # Compute target Q-values for next states
-        next_q_values = self._compute_batched_next_q_values(next_states, actions).view(-1, 1)  # Shape (batch_size, 1)
+        next_q_values = self._compute_batched_next_q_values(next_states, actions).view(-1, 1)
         self.logger.info(f"next_q_values shape: {next_q_values.shape}")
 
         # Calculate target Q-values
         target_q_values = rewards + self.gamma * next_q_values * (1 - dones)
         self.logger.info(f"target_q_values shape: {target_q_values.shape}")
 
-        # Calculate loss and optimize
+        # Calculate loss with L2 regularization and optimize
         loss = nn.MSELoss()(q_values, target_q_values.detach())
         self.logger.info(f"loss: {loss.item()}")
         self.optimizer.zero_grad()
@@ -100,15 +100,12 @@ class DQLAgent:
             self.target_network.load_state_dict(self.q_network.state_dict())
 
     def _compute_batched_next_q_values(self, next_states: Tensor, actions: Tensor) -> Tensor:
-        # Compute Q-values for each action in the next states and take max over actions
         all_q_values = []
         for move in actions:
             next_state_actions = torch.cat((next_states, move.unsqueeze(0).expand(next_states.size(0), -1)), dim=1)
-            q_values = self.target_network(next_state_actions)  # Shape: (batch_size, 1)
+            q_values = self.target_network(next_state_actions)
             all_q_values.append(q_values)
 
-        # Stack all Q-values along a new dimension and find the max along that dimension
-        all_q_values = torch.stack(all_q_values, dim=1)  # Shape: (batch_size, num_actions, 1)
-        max_q_values, _ = torch.max(all_q_values, dim=1)  # Shape: (batch_size, 1)
-
+        all_q_values = torch.stack(all_q_values, dim=1)
+        max_q_values, _ = torch.max(all_q_values, dim=1)
         return max_q_values
