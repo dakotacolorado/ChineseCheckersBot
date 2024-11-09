@@ -21,3 +21,7 @@ class ICatalog(Protocol):
     def list_datasets(self) -> List[IMetadata]:
         """Returns a list of metadata keys currently available in the catalog."""
         ...
+
+    def delete_dataset(self, metadata: IMetadata) -> None:
+        """Deletes the dataset associated with the specified metadata key."""
+        ...

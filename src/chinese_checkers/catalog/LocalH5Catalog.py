@@ -10,8 +10,8 @@ from .IDataMetadata import IDataMetadata
 
 logger = logging.getLogger(__name__)
 
-M = TypeVar('M', bound=IMetadata)
 D = TypeVar('D', bound=IData)
+M = TypeVar('M', bound=IMetadata)
 DM = TypeVar('DM', bound=IDataMetadata[D, M])
 
 class LocalH5Catalog(ABC, Generic[M, D, DM]):
@@ -123,3 +123,31 @@ class LocalH5Catalog(ABC, Generic[M, D, DM]):
         except (IndexError, ValueError, TypeError) as e:
             logger.error(f"Failed to extract metadata from path {directory_path}: {e}")
             raise
+
+    def delete_dataset(self, metadata: M) -> None:
+        """Deletes the dataset associated with the specified metadata key."""
+        dataset_path = self._construct_path(metadata)
+
+        # Debugging: Log the constructed path and expected filename
+        logger.debug(f"Attempting to delete dataset at path: {dataset_path}")
+        logger.debug(f"Expected filename: {self.filename}")
+
+        if not dataset_path.is_file():
+            logger.warning(f"Dataset file {dataset_path} does not exist. Nothing to delete.")
+            return
+
+        try:
+            # Remove the file
+            dataset_path.unlink()
+            logger.info(f"Deleted dataset file at {dataset_path}")
+
+            # Remove the directory if it is empty
+            parent_dir = dataset_path.parent
+            if not any(parent_dir.iterdir()):  # Check if the directory is empty
+                parent_dir.rmdir()
+                logger.info(f"Deleted empty directory at {parent_dir}")
+
+        except Exception as e:
+            logger.error(f"Failed to delete dataset at {dataset_path}: {e}")
+            raise
+

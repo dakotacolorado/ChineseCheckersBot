@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-T = TypeVar('T')  # Generic type for data
-S = TypeVar('S')  # Generic type for metadata
+from .IMetadata import IMetadata
+from .IData import IData
+
+T = TypeVar('T', bound=IData)  # Generic type for data
+S = TypeVar('S', bound=IMetadata)  # Generic type for metadata
 
 
 class IDataMetadata(ABC, Generic[T, S]):
