@@ -1,7 +1,7 @@
 from typing import Tuple
 import torch
 import numpy as np
-from chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
+from ...game.ChineseCheckersGame import ChineseCheckersGame
 
 
 class SpatialBoardStateEncoder:

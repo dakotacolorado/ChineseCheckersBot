@@ -1,8 +1,8 @@
 import torch
-from chinese_checkers.game import Move, ChineseCheckersGame, Position
 from typing import List
 
-from chinese_checkers.geometry.Vector import Vector
+from ...game import ChineseCheckersGame, Move, Position, Player
+from ...geometry import Vector
 
 
 class SpatialMoveMetricsEncoder:
@@ -23,14 +23,16 @@ class SpatialMoveMetricsEncoder:
         """
         current_player = game.get_current_player()
         target_centroid = self._calculate_centroid(current_player.target_positions)
-        board_radius = game.board.radius  # Assuming game.board provides the radius
+        board_radius = game.board.radius
 
         move_length = self._calculate_move_length(move, board_radius)
         start_distance = self._distance_from_target_centroid(move.position, target_centroid, board_radius)
         end_position = move.apply()
         end_distance = self._distance_from_target_centroid(end_position, target_centroid, board_radius)
 
-        return torch.tensor([move_length, start_distance, end_distance], dtype=torch.float32)
+        projection_onto_shortest_path = SpatialMoveMetricsEncoder._projection_onto_shortest_path(move, target_centroid)
+
+        return torch.tensor([move_length, start_distance, end_distance, projection_onto_shortest_path], dtype=torch.float32)
 
     @staticmethod
     def _calculate_move_length(move: Move, board_radius: float) -> float:
@@ -57,6 +59,18 @@ class SpatialMoveMetricsEncoder:
         return Vector(avg_i, avg_j)
 
     @staticmethod
-    def _distance_from_target_centroid(position: Position, centroid: Position, board_radius: float) -> float:
+    def _distance_from_target_centroid(position: Position, centroid: Vector, board_radius: float) -> float:
         distance = position.distance(centroid)
         return distance / board_radius
+
+    @staticmethod
+    def _projection_onto_shortest_path(move: Move, target_centroid: Vector) -> float:
+        position: Position = move.position
+        move_vector = move.apply() - position
+        shortest_path = target_centroid - position
+
+        if shortest_path.norm() == 0:
+            return 0.0
+
+        projection = move_vector.dot(shortest_path) / shortest_path.norm()
+        return projection

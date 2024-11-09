@@ -1,5 +1,5 @@
 import torch
-from chinese_checkers.game import Move, ChineseCheckersGame
+from ...game import Move, ChineseCheckersGame
 
 
 class SpatialMoveEncoder:

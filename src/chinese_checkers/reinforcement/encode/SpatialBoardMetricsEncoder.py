@@ -1,8 +1,8 @@
 import logging
 from typing import Tuple, List
 import torch
-from chinese_checkers.game import ChineseCheckersGame, Player, Position
-from chinese_checkers.geometry.Vector import Vector  # Assuming Vector is defined as in previous examples
+from ...game import ChineseCheckersGame, Player, Position
+from ...geometry import Vector
 
 class SpatialBoardMetricsEncoder:
     """

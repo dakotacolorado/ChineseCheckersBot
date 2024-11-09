@@ -4,7 +4,7 @@ import torch
 
 from .ExperienceData import ExperienceData
 from .ExperienceMetadata import ExperienceMetadata
-from ..encode import SpatialMoveMetricsEncoder, DistanceToWinRewardSimulationEncoder, SpatialBoardMetricsEncoder
+from ..encode import SpatialMoveMetricsEncoder, RewardEncoder, SpatialBoardMetricsEncoder
 from ...catalog import IDataMetadata
 from ...game import ChineseCheckersGame
 from ...simulation import GameSimulation, SimulationMetadata
@@ -26,18 +26,18 @@ class Experience(IDataMetadata[ExperienceData, ExperienceMetadata]):
             generator_name: str
     ) -> List["Experience"]:
 
-        if generator_name == "v0.0.1":
-            return Experience._generate_experiences_v0_0_1(simulation, generator_name)
+        if generator_name == "v0.0.2":
+            return Experience._generate_experiences_v0_0_2(simulation, generator_name)
         else:
             raise ValueError(f"Unsupported encoder name '{generator_name}'")
 
     @staticmethod
-    def _generate_experiences_v0_0_1(
+    def _generate_experiences_v0_0_2(
             simulation: GameSimulation,
             generator_name: str
     ) -> List["Experience"]:
         move_encoder = SpatialMoveMetricsEncoder()
-        reward_encoder = DistanceToWinRewardSimulationEncoder()
+        reward_encoder = RewardEncoder()
         board_state_encoder = SpatialBoardMetricsEncoder(simulation.metadata.board_size)
 
         rewards = reward_encoder.encode(simulation)

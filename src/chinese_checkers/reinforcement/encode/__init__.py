@@ -1,11 +1,11 @@
 from .SpatialMoveMetricsEncoder import SpatialMoveMetricsEncoder
-from .DistanceToWinRewardSimulationEncoder import DistanceToWinRewardSimulationEncoder
+from .RewardEncoder import RewardEncoder
 from .SpatialBoardMetricsEncoder import SpatialBoardMetricsEncoder
 from .SpatialBoardStateEncoder import SpatialBoardStateEncoder
 
 __all__ = [
     "SpatialMoveMetricsEncoder",
-    "DistanceToWinRewardSimulationEncoder",
+    "RewardEncoder",
     "SpatialBoardMetricsEncoder",
     "SpatialBoardStateEncoder",
 ]
