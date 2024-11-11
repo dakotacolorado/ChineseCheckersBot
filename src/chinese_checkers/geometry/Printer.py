@@ -24,7 +24,8 @@ class Printer:
             *point_groups: List[List[Vector]],
             axes: plt.Axes = None,
             show_plot: bool = True,
-            game_metrics: Dict[str, any] = None
+            game_metrics: Dict[str, any] = None,
+            show_coordinates: bool = False,
     ) -> None:
         """Render hexagons for the primary and any additional point groups and display game metrics."""
 
@@ -42,7 +43,7 @@ class Printer:
 
         # Plot the points.
         self._plot_hexagon_points(axes, regularized_points, point_colors)
-        if self.show_coordinates:
+        if self.show_coordinates or show_coordinates:
             self._annotate_points(axes, regularized_points, all_points, self.plot_size)
 
         # Display the game metrics if provided
