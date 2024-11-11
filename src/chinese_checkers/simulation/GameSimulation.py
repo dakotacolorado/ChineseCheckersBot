@@ -135,6 +135,9 @@ class GameSimulation(IDataMetadata[SimulationData, SimulationMetadata]):
         logger.debug("Simulation data constructed successfully.")
         return GameSimulation(game_metadata, game_positions)
 
+    def to_game_sequence(self, sample_period: int = 1) -> List[ChineseCheckersGame]:
+        return self._to_game_sequence(sample_period=sample_period)
+
     def _to_game_sequence(self, sample_period: int = 1) -> List[ChineseCheckersGame]:
         """Converts the simulation data into a sequence of game states."""
         logger.debug(f"Generating game sequence with sample_period={sample_period}")
