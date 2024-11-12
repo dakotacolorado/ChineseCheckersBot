@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 from typing import List, Type, Optional
 import numpy as np
+
+from ..catalog import IData
 from ..game.Move import Move
 from ..game.Position import Position
 
 
 @dataclass(frozen=True)
-class SimulationData:
+class SimulationData(IData):
     """Data related to player positions in the game."""
 
     player_ids: List[str]
