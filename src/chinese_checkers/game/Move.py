@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Dict, Any
 
 from ..geometry.Vector import Vector
 from .Position import Position
@@ -29,3 +29,14 @@ class Move(Vector):
     @staticmethod
     def from_tuple(tpl: Tuple[Tuple[int, int], Tuple[int, int]]) -> "Move":
         return Move(tpl[0][0], tpl[0][1], Position.from_tuple(tpl[1]))
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'i': self.i,
+            'j': self.j,
+            'position': self.position.to_dict()
+        }
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> "Move":
+        return Move(data['i'], data['j'], Position.from_dict(data['position']))

@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Dict
 
 from ..geometry.Vector import Vector
 
@@ -14,3 +14,10 @@ class Position(Vector):
     @staticmethod
     def from_tuple(tpl: Tuple[int, int]) -> "Position":
         return Position(tpl[0], tpl[1])
+
+    def to_dict(self) -> Dict[str, int]:
+        return {'i': self.i, 'j': self.j}
+
+    @staticmethod
+    def from_dict(data: Dict[str, int]) -> "Position":
+        return Position(data['i'], data['j'])
