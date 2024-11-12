@@ -4,7 +4,7 @@ from typing import List, Iterator, Type
 from .Experience import Experience
 from .ExperienceData import ExperienceData
 from .ExperienceMetadata import ExperienceMetadata
-from ...catalog.LocalH5Catalog import LocalH5Catalog
+from chinese_checkers.catalog.LocalH5Catalog import LocalH5Catalog
 
 
 class ExperienceCatalog(LocalH5Catalog[ExperienceMetadata, ExperienceData, Experience]):
