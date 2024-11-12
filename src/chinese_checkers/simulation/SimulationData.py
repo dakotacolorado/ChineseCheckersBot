@@ -1,6 +1,9 @@
+import json
 from dataclasses import dataclass
-from typing import List, Type, Optional
+from typing import List, Type, Optional, Dict, Any
 import numpy as np
+import pandas as pd
+import pyarrow as pa
 
 from ..catalog import IData
 from ..game.Move import Move
@@ -64,3 +67,67 @@ class SimulationData(IData):
     @staticmethod
     def _convert_to_positions(data: np.ndarray) -> List[List[Position]]:
         return [[Position.from_tuple(tuple(pos)) for pos in sublist] for sublist in data]
+
+
+    def to_dataframe(self) -> pd.DataFrame:
+        data = {
+            'player_ids': json.dumps(self.player_ids),
+            'player_start_positions': json.dumps(self._positions_to_dict_list(self.player_start_positions)),
+            'player_target_positions': json.dumps(self._positions_to_dict_list(self.player_target_positions)),
+            'historical_moves': json.dumps(self._moves_to_dict_list(self.historical_moves))
+        }
+        df = pd.DataFrame([data])
+        return df
+
+    @staticmethod
+    def from_dataframe(row: pd.Series) -> 'SimulationData':
+        player_ids = json.loads(row['player_ids'])
+        player_start_positions = SimulationData._dict_list_to_positions(json.loads(row['player_start_positions']))
+        player_target_positions = SimulationData._dict_list_to_positions(json.loads(row['player_target_positions']))
+        historical_moves = SimulationData._dict_list_to_moves(json.loads(row['historical_moves']))
+        return SimulationData(
+            player_ids=player_ids,
+            player_start_positions=player_start_positions,
+            player_target_positions=player_target_positions,
+            historical_moves=historical_moves
+        )
+
+    @staticmethod
+    def _positions_to_dict_list(positions: List[List[Position]]) -> List[List[Dict[str, int]]]:
+        """Converts positions to a list of dictionaries with native Python ints."""
+        return [
+            [{'i': int(pos.i), 'j': int(pos.j)} for pos in pos_list]
+            for pos_list in positions
+        ]
+
+    @staticmethod
+    def _dict_list_to_positions(data: List[List[Dict[str, int]]]) -> List[List[Position]]:
+        """Converts a list of dictionaries back to positions."""
+        return [
+            [Position(i=pos_dict['i'], j=pos_dict['j']) for pos_dict in pos_list]
+            for pos_list in data
+        ]
+
+    @staticmethod
+    def _moves_to_dict_list(moves: List[Move]) -> List[Dict[str, Any]]:
+        """Converts moves to a list of dictionaries with native Python types."""
+        return [
+            {
+                'i': int(move.i),
+                'j': int(move.j),
+                'position': {'i': int(move.position.i), 'j': int(move.position.j)}
+            }
+            for move in moves
+        ]
+
+    @staticmethod
+    def _dict_list_to_moves(data: List[Dict[str, Any]]) -> List[Move]:
+        """Converts a list of dictionaries back to moves."""
+        return [
+            Move(
+                i=move_dict['i'],
+                j=move_dict['j'],
+                position=Position(i=move_dict['position']['i'], j=move_dict['position']['j'])
+            )
+            for move_dict in data
+        ]

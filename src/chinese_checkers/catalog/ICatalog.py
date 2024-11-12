@@ -10,7 +10,7 @@ class ICatalog(Protocol):
         """Appends a record to the dataset identified by the provided metadata key."""
         ...
 
-    def add_record_list(self, data_metadata_list: List[IDataMetadata], batch_size: int = 1000) -> None:
+    def add_record_list(self, data_metadata_list: List[IDataMetadata]) -> None:
         """Appends records in batches to the dataset identified by the provided metadata keys."""
         ...
 
