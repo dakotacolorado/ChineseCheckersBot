@@ -33,10 +33,10 @@ class RewardEncoder:
             winner_id: str,
     ) -> float:
         return sum([
-            RewardEncoder._player_distance_from_target(next_game)/4,
             RewardEncoder._distance_from_win_loss(game, turn, game_length, winner_id),
-            RewardEncoder._player_positions_in_target(next_game),
-            RewardEncoder._player_positions_not_in_start(next_game)
+            RewardEncoder._player_distance_from_target(next_game) / 4 * (turn / game_length),
+            RewardEncoder._player_positions_in_target(next_game) / 4 * (turn / game_length),
+            RewardEncoder._player_positions_not_in_start(next_game) / 4 * ( turn / game_length )
         ])
 
     # normalize the distance of group to target between 0 and 1

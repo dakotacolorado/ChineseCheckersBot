@@ -17,9 +17,9 @@ class CnnEncoderExperience:
     def __init__(self, encoder_version: str):
         self.encoder_version = encoder_version
 
-        if self.encoder_version == "v004":
+        if self.encoder_version == "v005":
             self.logger.info(f"Using CnnExperienceEncoder version: {self.encoder_version}")
-            self._encoder = CnnEncoderExperience.encode_v004
+            self._encoder = CnnEncoderExperience.encode_v005
         else:
             raise ValueError(f"Unknown encoder version: {self.encoder_version}")
 
@@ -30,7 +30,7 @@ class CnnEncoderExperience:
         return self._encoder(simulation)
 
     @staticmethod
-    def encode_v004(
+    def encode_v005(
             simulation: GameSimulation
     ):
         move_encoder = CnnEncoderMove(simulation.metadata.board_size)
@@ -59,7 +59,7 @@ class CnnEncoderExperience:
                 ),
                 ExperienceMetadata.from_simulation_metadata(
                     simulation.metadata,
-                    generator_name=f"CnnExperienceEncoder-v004",
+                    generator_name=f"CnnExperienceEncoder-v005",
                     current_player=current_game_state.get_current_player().player_id,
                 )
             )

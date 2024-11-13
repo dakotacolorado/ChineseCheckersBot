@@ -82,7 +82,7 @@ class DqlCnnModel(IModel):
         max_q_value = float('-inf')
 
         # Evaluate each possible move
-        for move in game.get_next_moves():
+        for move in game.get_next_moves(remove_backwards_moves=True):
             # Encode the move
             encoded_move = self.move_encoder.encode(move).unsqueeze(0).to(self.device)  # Shape: (1, channels, height, width)
             # Pass through move_cnn
