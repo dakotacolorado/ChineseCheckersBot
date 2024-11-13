@@ -1,8 +1,6 @@
 from typing import List, Dict
 
-import matplotlib.pyplot as plt
-
-from build.lib.chinese_checkers.geometry import Vector
+from chinese_checkers.geometry import Vector
 from .GameRuleEngine import GameRuleEngine
 from .Move import Move
 from .Player import Player
