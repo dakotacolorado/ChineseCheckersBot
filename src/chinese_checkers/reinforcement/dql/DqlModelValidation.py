@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from typing import List
-from ..experience import ExperienceData
+from chinese_checkers.experience import ExperienceData
 
 class DqlModelValidation:
     def __init__(self, model: nn.Module, gamma: float, test_set: List[ExperienceData], validation_set: List[ExperienceData]):

@@ -8,7 +8,7 @@ from collections import deque
 from typing import List
 from torch import Tensor
 from .DqlNetwork import DQLNetwork
-from ..experience import ExperienceData
+from chinese_checkers.experience import ExperienceData
 
 
 class DQLAgent:
