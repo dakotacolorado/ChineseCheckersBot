@@ -2,7 +2,7 @@ from typing import Tuple
 
 import numpy as np
 import torch
-from ...game.ChineseCheckersGame import ChineseCheckersGame
+from chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
 
 class CnnEncoderState:
     def __init__(self, board_size: int):

@@ -2,11 +2,11 @@ import torch
 from chinese_checkers.game.ChineseCheckersGame import ChineseCheckersGame
 from chinese_checkers.game.Move import Move
 from chinese_checkers.model import IModel
-from chinese_checkers.reinforcement.cnn.CnnNetworkState import CnnNetworkState
-from chinese_checkers.reinforcement.cnn.CnnNetworkMove import CnnNetworkMove
-from chinese_checkers.reinforcement.cnn.DqlCnnNetwork import DqlCnnNetwork
-from chinese_checkers.reinforcement.cnn.CnnEncoderState import CnnEncoderState
-from chinese_checkers.reinforcement.cnn.CnnEncoderMove import CnnEncoderMove
+from chinese_checkers.cnn.CnnNetworkState import CnnNetworkState
+from chinese_checkers.cnn.CnnNetworkMove import CnnNetworkMove
+from chinese_checkers.cnn.DqlCnnNetwork import DqlCnnNetwork
+from chinese_checkers.cnn.CnnEncoderState import CnnEncoderState
+from chinese_checkers.cnn.CnnEncoderMove import CnnEncoderMove
 
 
 class DqlCnnModel(IModel):

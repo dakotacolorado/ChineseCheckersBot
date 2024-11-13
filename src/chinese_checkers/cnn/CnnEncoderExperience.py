@@ -8,7 +8,7 @@ from chinese_checkers.simulation import GameSimulation
 from .CnnEncoderState import CnnEncoderState
 from .RewardEncoder import RewardEncoder
 from chinese_checkers.experience import Experience, ExperienceData, ExperienceMetadata
-from ...game import ChineseCheckersGame
+from chinese_checkers.game import ChineseCheckersGame
 
 
 class CnnEncoderExperience:

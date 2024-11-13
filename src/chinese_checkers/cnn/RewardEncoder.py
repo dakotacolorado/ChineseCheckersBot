@@ -2,9 +2,9 @@
 from typing import List
 import torch
 
-from ...game import ChineseCheckersGame, Move, Player
-from ...geometry import Centroid
-from ...simulation import GameSimulation
+from chinese_checkers.game import ChineseCheckersGame, Move, Player
+from chinese_checkers.geometry import Centroid
+from chinese_checkers.simulation import GameSimulation
 
 
 class RewardEncoder:
