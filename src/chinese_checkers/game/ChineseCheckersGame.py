@@ -2,6 +2,7 @@ from typing import List, Dict
 
 import matplotlib.pyplot as plt
 
+from build.lib.chinese_checkers.geometry import Vector
 from .GameRuleEngine import GameRuleEngine
 from .Move import Move
 from .Player import Player
@@ -127,13 +128,32 @@ class ChineseCheckersGame:
             for p in player.positions
         ]
 
-    def get_next_moves(self) -> List[Move]:
+    def get_next_moves(self, remove_backwards_moves: bool = False) -> List[Move]:
         engine = GameRuleEngine(
             self.get_current_player(),
             [p for p in self.players if p != self.get_current_player()],
             self.board
         )
+        if remove_backwards_moves:
+            return _.filter_(
+                engine.get_next_moves_for_player(),
+                lambda m: not self._is_move_backwards(m, self.get_current_player().player_id)
+            )
         return engine.get_next_moves_for_player()
+
+    normalized_player_directions = {
+        "0": Vector(-0.7071068, -0.7071068),
+        "1": Vector(0.4472136, -0.8944272),
+        "2": Vector(0.8944272, -0.4472136),
+        "3": Vector(0.7071068, 0.7071068),
+        "4": Vector(-0.4472136, 0.8944272),
+        "5": Vector(-0.8944272, 0.4472136),
+    }
+
+    @staticmethod
+    def _is_move_backwards(move: Move, player_id: str) -> bool:
+        return move.dot(ChineseCheckersGame.normalized_player_directions[player_id]) < 0
+        pass
 
     def is_game_won(self) -> bool:
         """

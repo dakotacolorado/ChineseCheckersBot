@@ -78,3 +78,45 @@ class TestChineseCheckersGame(TestCase):
 
         # verify
         self.assertTrue(game.get_winner() == game.players[0])
+
+    def test_no_backwards_moves_initial_state(self):
+        game = ChineseCheckersGame.start_game()
+
+        # Get moves with and without backwards filter in the initial state
+        moves_without_filter = game.get_next_moves(remove_backwards_moves=False)
+        moves_with_filter = game.get_next_moves(remove_backwards_moves=True)
+
+        # Verify that the move lists are the same size initially, as there should be no backwards moves
+        self.assertEqual(len(moves_with_filter), len(moves_without_filter),
+                         "In the initial state, there should be no backwards moves to filter out")
+
+    def test_moves_after_two_moves_applied(self):
+        game = ChineseCheckersGame.start_game()
+
+        # Apply two moves
+        game = game.apply_move(game.get_next_moves()[0])
+        game = game.apply_move(game.get_next_moves()[0])
+
+        # Get moves with and without backwards filter after two moves
+        moves_without_filter = game.get_next_moves(remove_backwards_moves=False)
+        moves_with_filter = game.get_next_moves(remove_backwards_moves=True)
+
+        # Verify that one move is removed with the filter enabled
+        self.assertEqual(len(moves_without_filter) - 1, len(moves_with_filter),
+                         "After applying two moves, the move list should be one less with the backwards filter")
+
+    def test_moves_after_three_moves_applied(self):
+        game = ChineseCheckersGame.start_game()
+
+        # Apply three moves
+        game = game.apply_move(game.get_next_moves()[0])
+        game = game.apply_move(game.get_next_moves()[0])
+        game = game.apply_move(game.get_next_moves()[0])
+
+        # Get moves with and without backwards filter after three moves
+        moves_without_filter = game.get_next_moves(remove_backwards_moves=False)
+        moves_with_filter = game.get_next_moves(remove_backwards_moves=True)
+
+        # Verify that one move is removed with the filter enabled, testing for both players
+        self.assertEqual(len(moves_without_filter) - 1, len(moves_with_filter),
+                         "After applying three moves, the move list should be one less with the backwards filter")
