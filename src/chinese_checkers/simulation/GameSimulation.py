@@ -1,7 +1,7 @@
 import logging
 import re
 from dataclasses import dataclass
-from typing import List
+from typing import List, Type
 from IPython.display import Image
 
 from .GameSimulationAnimation import GameSimulationAnimation
@@ -26,6 +26,13 @@ class GameSimulation(IDataMetadata[SimulationData, SimulationMetadata]):
     metadata: SimulationMetadata
     data: SimulationData
 
+    @staticmethod
+    def data_cls() -> Type[SimulationData]:
+        return SimulationData
+
+    @staticmethod
+    def metadata_cls() -> Type[SimulationMetadata]:
+        return SimulationMetadata
 
     @staticmethod
     def from_data_metadata(data: SimulationData, metadata: SimulationMetadata) -> 'GameSimulation':

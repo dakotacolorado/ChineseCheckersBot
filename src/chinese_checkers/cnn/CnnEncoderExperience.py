@@ -2,6 +2,7 @@ import logging
 from typing import List
 
 import torch
+from uuid import uuid4
 
 from .CnnEncoderMove import CnnEncoderMove
 from chinese_checkers.simulation import GameSimulation
@@ -17,9 +18,9 @@ class CnnEncoderExperience:
     def __init__(self, encoder_version: str):
         self.encoder_version = encoder_version
 
-        if self.encoder_version == "v005":
+        if self.encoder_version == "v006":
             self.logger.info(f"Using CnnExperienceEncoder version: {self.encoder_version}")
-            self._encoder = CnnEncoderExperience.encode_v005
+            self._encoder = CnnEncoderExperience.encode_v006
         else:
             raise ValueError(f"Unknown encoder version: {self.encoder_version}")
 
@@ -30,7 +31,7 @@ class CnnEncoderExperience:
         return self._encoder(simulation)
 
     @staticmethod
-    def encode_v005(
+    def encode_v006(
             simulation: GameSimulation
     ):
         move_encoder = CnnEncoderMove(simulation.metadata.board_size)
@@ -43,10 +44,12 @@ class CnnEncoderExperience:
         experiences = []
         current_game_state_encoding = None
         next_game_state_encoding = None
-        for reward, move, current_game_state in zip(
-                rewards,
-                simulation.data.historical_moves,
-                game_sequence
+        for turn, (reward, move, current_game_state) in enumerate(
+                zip(
+                    rewards,
+                    simulation.data.historical_moves,
+                    game_sequence
+                )
         ):
             current_game_state_encoding = state_encoder.encode(current_game_state) if current_game_state_encoding is None else next_game_state_encoding
             next_game_state = current_game_state.apply_move(move)
@@ -60,11 +63,13 @@ class CnnEncoderExperience:
                     action=move_encoder.encode(move),
                     reward=reward,
                     next_state=next_game_state_encoding,
-                    done=is_terminal
+                    done=is_terminal,
+                    turn=turn,  # Add the turn number
+                    game_uuid=str(uuid4())  # Generate a unique UUID for each experience
                 ),
                 ExperienceMetadata.from_simulation_metadata(
                     simulation.metadata,
-                    generator_name=f"CnnExperienceEncoder-v005",
+                    generator_name=f"CnnExperienceEncoder-v006",
                     current_player=current_game_state.get_current_player().player_id,
                 )
             )

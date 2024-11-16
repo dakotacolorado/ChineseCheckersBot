@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Type
 
 from .IMetadata import IMetadata
 from .IData import IData
@@ -12,6 +12,17 @@ class IDataMetadata(ABC, Generic[T, S]):
     def __init__(self, data: T, metadata: S):
         self.data = data
         self.metadata = metadata
+
+    @staticmethod
+    @abstractmethod
+    def data_cls() -> Type[T]:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def metadata_cls() -> Type[S]:
+        pass
+
 
     @staticmethod
     @abstractmethod
