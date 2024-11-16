@@ -7,16 +7,18 @@ from collections import deque
 from typing import List
 from torch import Tensor
 
+from build.lib.chinese_checkers.reinforcement.cnn import CnnEncoderExperience
 from .DqlCnnNetwork import DqlCnnNetwork
 from .CnnNetworkMove import CnnNetworkMove
 from .CnnNetworkState import CnnNetworkState
 from chinese_checkers.experience import ExperienceData
+from ..simulation import GameSimulation
 
 
 class DqlCnnAgent:
     logger = logging.getLogger(__name__)
 
-    def __init__(self, state_encoder, move_encoder, gamma: float = 0.99, lr: float = 0.001,
+    def __init__(self, state_encoder, move_encoder, experience_encoder: CnnEncoderExperience, gamma: float = 0.99, lr: float = 0.001,
                  epsilon_start: float = 1.0, epsilon_min: float = 0.1, epsilon_decay: float = 0.995,
                  buffer_size: int = 10000, batch_size: int = 64, weight_decay: float = 1e-4):
 
@@ -30,6 +32,7 @@ class DqlCnnAgent:
         self.epsilon_min = epsilon_min
         self.epsilon_decay = epsilon_decay
         self.batch_size = batch_size
+        self.experience_encoder = experience_encoder
 
         # Retrieve dimensions from the encoders
         state_dim, state_grid_h, state_grid_w = state_encoder.shape()
@@ -109,10 +112,10 @@ class DqlCnnAgent:
         if random.randint(1, 100) <= 10:
             self.target_network.load_state_dict(self.q_network.state_dict())
 
-    def validate(self, test_set: List[ExperienceData], validation_set: List[ExperienceData]) -> dict:
+    def validate(self, test_set: List[ExperienceData], validation_set: List[ExperienceData], validation_simulations: List[GameSimulation]) -> dict:
         test_error = self._compute_average_error(test_set)
         validation_error = self._compute_average_error(validation_set)
-        validation_error_discounted_returns = self._compute_average_error_discounted_returns(validation_set)
+        validation_error_discounted_returns = self._compute_average_error_discounted_returns(validation_simulations)
 
         return {
             "test_error": test_error,
@@ -156,26 +159,51 @@ class DqlCnnAgent:
 
         return total_error / len(experiences) if experiences else 0.0
 
-    def _compute_average_error_discounted_returns(self, experiences: List[ExperienceData]) -> float:
-        total_error = 0.0
-        loss_fn = nn.MSELoss()
-        discounted_return = 0.0
+    def _compute_average_error_discounted_returns(self, game_simulations: List[GameSimulation]) -> float:
+        """
+        Computes the average error of discounted returns across multiple game simulations.
 
-        for experience in reversed(experiences):
-            discounted_return = experience.reward.to(self.device) + self.gamma * discounted_return
+        Each simulation is processed sequentially, and the discounted returns are calculated
+        based on the game sequence. The function computes the Mean Squared Error (MSE) between
+        the predicted Q-values and the discounted returns for each simulation.
 
-            state_tensor = experience.state.unsqueeze(0).to(self.device)
-            action_tensor = experience.action.unsqueeze(0).to(self.device)
+        Args:
+            game_simulations (List[GameSimulation]): A list of game simulations in chronological order.
 
-            with torch.no_grad():
-                state_encoded = self.state_cnn(state_tensor)
-                action_encoded = self.move_cnn(action_tensor)
-                predicted_q_value = self.q_network(state_encoded, action_encoded).squeeze()
+        Returns:
+            float: The squared sum of average errors divided by the total number of games.
+        """
+        scores = []
+        for simulation in game_simulations:
+            # Encode experiences from the simulation
+            experiences = self.experience_encoder.encode(simulation)
+            total_error = 0.0
+            loss_fn = nn.MSELoss()
+            discounted_return = 0.0
 
-            error = loss_fn(predicted_q_value, discounted_return.squeeze())
-            total_error += error.item()
+            # Process experiences in reverse order to compute discounted returns
+            for experience in reversed(experiences):
+                discounted_return = experience.reward.to(self.device) + self.gamma * discounted_return
 
-        return total_error / len(experiences) if experiences else 0.0
+                # Prepare tensors for state and action
+                state_tensor = experience.state.unsqueeze(0).to(self.device)
+                action_tensor = experience.action.unsqueeze(0).to(self.device)
+
+                # Predict Q-value
+                with torch.no_grad():
+                    state_encoded = self.state_cnn(state_tensor)
+                    action_encoded = self.move_cnn(action_tensor)
+                    predicted_q_value = self.q_network(state_encoded, action_encoded).squeeze()
+
+                # Compute error
+                error = loss_fn(predicted_q_value, discounted_return.squeeze())
+                total_error += error.item()
+
+            # Compute average error for the simulation
+            scores.append(total_error / len(experiences) if experiences else 0.0)
+
+        # Return the squared sum of scores divided by the total number of games
+        return sum(score ** 2 for score in scores) / len(game_simulations) if game_simulations else 0.0
 
     def _compute_batched_next_q_values(self, next_state_encodings, actions) -> Tensor:
         all_q_values = []
