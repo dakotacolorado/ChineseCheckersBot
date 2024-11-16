@@ -176,7 +176,7 @@ class DqlCnnAgent:
         scores = []
         for simulation in game_simulations:
             # Encode experiences from the simulation
-            experiences = self.experience_encoder.encode(simulation)
+            experiences = [e.data for e in self.experience_encoder.encode(simulation)]
             total_error = 0.0
             loss_fn = nn.MSELoss()
             discounted_return = 0.0
