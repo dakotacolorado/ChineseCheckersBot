@@ -45,4 +45,4 @@ class CnnEncoderState:
                 x, y = position.i + self.board_size, position.j + self.board_size
                 board_tensor[2, x, y] = 1
 
-        return torch.tensor(board_tensor)
+        return torch.tensor(board_tensor, dtype=torch.float32)
