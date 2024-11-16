@@ -1,6 +1,5 @@
 import awswrangler as wr
 import pandas as pd
-import uuid
 from typing import Type, List
 from ..catalog import S3DataCatalog
 from .SimulationData import SimulationData
