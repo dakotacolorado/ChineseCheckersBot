@@ -13,6 +13,13 @@ from ..geometry.Printer import Printer
 
 class ChineseCheckersGame:
 
+    STARTING_PLAYER_CORNERS: Dict[int, List[int]] = {
+        2: [0, 3],
+        3: [0, 2, 4],
+        4: [0, 1, 3, 4],
+        6: [0, 1, 2, 3, 4, 5],
+    }
+
     @staticmethod
     def start_game(number_of_players: int = 2, board_size: int = 4) -> 'ChineseCheckersGame':
         """
@@ -46,14 +53,6 @@ class ChineseCheckersGame:
 
         hexagram = Hexagram(board_size)
 
-        # Depending on the amount of players, a different subset of starting corners will be used.
-        starting_player_corners: Dict[int, List[int]] = {
-            2: [0, 3],
-            3: [0, 2, 4],
-            4: [0, 1, 3, 4],
-            6: [0, 1, 2, 3, 4, 5],
-        }
-
         # Create a player for each starting corner.
         players = [
             Player(
@@ -61,7 +60,7 @@ class ChineseCheckersGame:
                 [Position(v.i, v.j) for v in hexagram.hexagram_corner_points[(corner_index + 3) % 6]],
                 str(corner_index)
             )
-            for corner_index in starting_player_corners[number_of_players]
+            for corner_index in ChineseCheckersGame.STARTING_PLAYER_CORNERS[number_of_players]
         ]
 
         return ChineseCheckersGame(players, 0, hexagram)
