@@ -1,4 +1,7 @@
 import unittest
+
+from build.lib.chinese_checkers.game import Position
+from chinese_checkers.game import Move
 from src.chinese_checkers.game import ChineseCheckersGame, Player
 from chinese_checkers.cnn import RewardEncoder
 
@@ -11,11 +14,11 @@ class TestRewardEncoder(unittest.TestCase):
     def test_all_positions_in_start_should_return_negative_one_not_in_start_and_zero_in_target(self):
         """If all pieces are in starting positions, expect _player_positions_not_in_start = -1, _player_positions_in_target = 0."""
         self.assertAlmostEqual(
-            RewardEncoder._player_positions_in_target(self.start_game), 0,
+            RewardEncoder._player_positions_in_target(self.start_game, Move(0,0,Position(0,0))), 0,
             msg="Expected player positions in target to be 0 at game start"
         )
         self.assertAlmostEqual(
-            RewardEncoder._player_positions_not_in_start(self.start_game), -1,
+            RewardEncoder._player_positions_not_in_start(self.start_game, Move(0,0,Position(0,0))), -1,
             msg="Expected player positions not in start to be -1 at game start"
         )
 
@@ -35,11 +38,11 @@ class TestRewardEncoder(unittest.TestCase):
             printer=self.start_game.printer
         )
         self.assertAlmostEqual(
-            RewardEncoder._player_positions_in_target(game_t1), 1,
+            RewardEncoder._player_positions_in_target(game_t1, self.start_game.get_next_moves()[0]), 1,
             msg="Expected player positions in target to be 1 after update"
         )
         self.assertAlmostEqual(
-            RewardEncoder._player_positions_not_in_start(game_t1), 0,
+            RewardEncoder._player_positions_not_in_start(game_t1, self.start_game.get_next_moves()[0]), 0,
             msg="Expected player positions not in start to be 0 after update"
         )
 

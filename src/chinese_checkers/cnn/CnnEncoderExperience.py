@@ -37,24 +37,29 @@ class CnnEncoderExperience:
         reward_encoder = RewardEncoder()
         state_encoder = CnnEncoderState(simulation.metadata.board_size)
 
-        rewards = reward_encoder.encode(simulation)
         game_sequence: List[ChineseCheckersGame] = simulation.to_game_sequence()
+        rewards = reward_encoder.encode(simulation, game_sequence)
 
         experiences = []
+        current_game_state_encoding = None
+        next_game_state_encoding = None
         for reward, move, current_game_state in zip(
                 rewards,
                 simulation.data.historical_moves,
                 game_sequence
         ):
+            current_game_state_encoding = state_encoder.encode(current_game_state) if current_game_state_encoding is None else next_game_state_encoding
             next_game_state = current_game_state.apply_move(move)
+            next_game_state_encoding = state_encoder.encode(next_game_state)
+
             is_terminal = torch.tensor(next_game_state.is_game_won(), dtype=torch.float32)  # Encoded as tensor
 
             experience = Experience(
                 ExperienceData(
-                    state=state_encoder.encode(current_game_state),
+                    state=current_game_state_encoding,
                     action=move_encoder.encode(move),
                     reward=reward,
-                    next_state=state_encoder.encode(next_game_state),
+                    next_state=next_game_state_encoding,
                     done=is_terminal
                 ),
                 ExperienceMetadata.from_simulation_metadata(
