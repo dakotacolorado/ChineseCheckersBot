@@ -7,7 +7,7 @@ from collections import deque
 from typing import List
 from torch import Tensor
 
-from build.lib.chinese_checkers.reinforcement.cnn import CnnEncoderExperience
+from .CnnEncoderExperience import CnnEncoderExperience
 from .DqlCnnNetwork import DqlCnnNetwork
 from .CnnNetworkMove import CnnNetworkMove
 from .CnnNetworkState import CnnNetworkState
