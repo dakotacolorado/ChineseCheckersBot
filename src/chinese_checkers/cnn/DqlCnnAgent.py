@@ -71,6 +71,9 @@ class DqlCnnAgent:
     def store_experience(self, experience: ExperienceData):
         self.replay_buffer.append(experience)
 
+    def store_batch_experiences(self, experiences: List[ExperienceData]):
+        self.replay_buffer.extend(experiences)
+
     def sample_experiences(self) -> List[ExperienceData]:
         return random.sample(self.replay_buffer, self.batch_size)
 
