@@ -35,4 +35,4 @@ class CnnEncoderMove:
         end_x, end_y = end_position.i + self.board_size, end_position.j + self.board_size
         move_tensor[1, end_x, end_y] = 1
 
-        return torch.tensor(move_tensor)
+        return torch.tensor(move_tensor, dtype=torch.float32)
