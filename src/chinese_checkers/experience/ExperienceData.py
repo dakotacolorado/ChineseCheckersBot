@@ -1,7 +1,6 @@
-import json
 from dataclasses import dataclass
 from typing import Dict, Any
-
+import json
 import numpy as np
 import pandas as pd
 import torch
@@ -17,6 +16,8 @@ class ExperienceData(IData):
     reward: Tensor
     next_state: Tensor
     done: Tensor
+    turn: int
+    game_uuid: str
 
     def to_storable(self) -> Dict[str, Any]:
         """
@@ -33,7 +34,9 @@ class ExperienceData(IData):
             "action": ensure_min_dim(self.action),
             "reward": ensure_min_dim(self.reward),
             "next_state": ensure_min_dim(self.next_state),
-            "done": ensure_min_dim(self.done)
+            "done": ensure_min_dim(self.done),
+            "turn": self.turn,
+            "game_uuid": self.game_uuid,
         }
 
     @staticmethod
@@ -41,7 +44,7 @@ class ExperienceData(IData):
         """
         Reconstructs an ExperienceData instance from stored data by converting numpy arrays back to tensors.
         """
-        required_keys = ["state", "action", "reward", "next_state", "done"]
+        required_keys = ["state", "action", "reward", "next_state", "done", "turn", "game_uuid"]
 
         # Check that all required keys are present
         if not all(key in data for key in required_keys):
@@ -56,30 +59,31 @@ class ExperienceData(IData):
             action=restore_tensor(data["action"]),
             reward=restore_tensor(data["reward"]),
             next_state=restore_tensor(data["next_state"]),
-            done=restore_tensor(data["done"])
+            done=restore_tensor(data["done"]),
+            turn=int(data["turn"]),
+            game_uuid=str(data["game_uuid"]),
         )
 
     def to_dataframe(self) -> pd.DataFrame:
         """
         Serializes ExperienceData to a Pandas DataFrame suitable for Parquet storage.
-        - `state` and `action` are serialized as JSON strings.
-        - `reward` is stored as a scalar float.
-        - `next_state` is serialized as a JSON string.
-        - `done` is stored as an integer (0 for False, 1 for True).
         """
         data = {
             'state': json.dumps(self.state.numpy().tolist()),
             'action': json.dumps(self.action.numpy().tolist()),
-            'reward': float(self.reward.item()),      # Store as scalar float
+            'reward': float(self.reward.item()),  # Store as scalar float
             'next_state': json.dumps(self.next_state.numpy().tolist()),
-            'done': int(self.done.item()),            # Store as int (0 or 1)
+            'done': int(self.done.item()),  # Store as int (0 or 1)
+            'turn': self.turn,
+            'game_uuid': self.game_uuid,
         }
         df = pd.DataFrame([data])
 
         # Explicitly set data types to prevent unintended type conversions
         df = df.astype({
             'reward': 'float64',
-            'done': 'int8'    # Store 'done' as int8
+            'done': 'int8',  # Store 'done' as int8
+            'turn': 'int32',
         })
 
         return df
@@ -88,46 +92,30 @@ class ExperienceData(IData):
     def from_dataframe(row: pd.Series) -> 'ExperienceData':
         """
         Deserializes a Pandas DataFrame row back into an ExperienceData instance.
-        - `state` and `action` are deserialized from JSON strings.
-        - `reward` is converted to a 1-element float tensor.
-        - `next_state` is deserialized from a JSON string.
-        - `done` is converted to a 1-element bool tensor.
         """
         # Deserialize state and action
         state = torch.tensor(json.loads(row['state']))
         action = torch.tensor(json.loads(row['action']))
 
         # Deserialize reward
-        reward_value = row['reward']
-        if isinstance(reward_value, (float, int)):
-            reward_value = float(reward_value)
-        elif isinstance(reward_value, np.floating):
-            reward_value = float(reward_value)
-        elif isinstance(reward_value, np.integer):
-            reward_value = float(reward_value)
-        else:
-            raise ValueError(f"Unsupported type for reward: {type(reward_value)}")
-        reward = torch.tensor([reward_value], dtype=torch.float32)  # 1-element tensor
+        reward = torch.tensor([float(row['reward'])], dtype=torch.float32)
 
         # Deserialize next_state
         next_state = torch.tensor(json.loads(row['next_state']))
 
         # Deserialize done
-        done_value = row['done']
-        if isinstance(done_value, (int, float)):
-            done_bool = bool(done_value != 0)
-        elif isinstance(done_value, np.integer):
-            done_bool = bool(done_value)
-        elif isinstance(done_value, np.floating):
-            done_bool = bool(done_value != 0)
-        else:
-            raise ValueError(f"Unsupported type for done: {type(done_value)}")
-        done = torch.tensor([done_bool], dtype=torch.bool)  # 1-element tensor
+        done = torch.tensor([bool(row['done'])], dtype=torch.bool)  # 1-element tensor
+
+        # Deserialize turn and game_uuid
+        turn = int(row['turn'])
+        game_uuid = str(row['game_uuid'])
 
         return ExperienceData(
             state=state,
             action=action,
             reward=reward,
             next_state=next_state,
-            done=done
+            done=done,
+            turn=turn,
+            game_uuid=game_uuid,
         )

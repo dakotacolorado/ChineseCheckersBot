@@ -1,9 +1,9 @@
 import json
-from dataclasses import dataclass
-from typing import List, Type, Optional, Dict, Any
+import uuid
+from dataclasses import dataclass, field
+from typing import List, Dict, Any
 import numpy as np
 import pandas as pd
-import pyarrow as pa
 
 from ..catalog import IData
 from ..game.Move import Move
@@ -18,6 +18,7 @@ class SimulationData(IData):
     player_start_positions: List[List[Position]]
     player_target_positions: List[List[Position]]
     historical_moves: List[Move]
+    uuid: str = field(default_factory=lambda: str(uuid.uuid4()))  # Auto-generate UUID if not provided
 
     def to_storable(self) -> dict:
         """
@@ -30,7 +31,8 @@ class SimulationData(IData):
             "player_ids": self._player_ids_to_bytes(self.player_ids),
             "player_start_positions": self._nested_list_to_array(self.player_start_positions),
             "player_target_positions": self._nested_list_to_array(self.player_target_positions),
-            "historical_moves": np.array([move.to_tuple() for move in self.historical_moves])
+            "historical_moves": np.array([move.to_tuple() for move in self.historical_moves]),
+            "uuid": self.uuid,
         }
 
     @staticmethod
@@ -44,12 +46,12 @@ class SimulationData(IData):
     @staticmethod
     def from_storable(data: dict) -> 'SimulationData':
         """
-        Creates a GamePositions object from stored h5py data.
+        Creates a SimulationData object from stored data.
 
         Ensures that the required keys exist in the data dictionary to safeguard against potential errors.
         """
         if not all(key in data for key in
-                   ["player_ids", "player_start_positions", "player_target_positions", "historical_moves"]):
+                   ["player_ids", "player_start_positions", "player_target_positions", "historical_moves", "uuid"]):
             raise ValueError("The provided data dictionary is missing required keys.")
 
         player_ids = list(map(lambda x: x.decode(), data["player_ids"]))
@@ -61,26 +63,32 @@ class SimulationData(IData):
             player_ids=player_ids,
             player_start_positions=player_start_positions,
             player_target_positions=player_target_positions,
-            historical_moves=historical_moves
+            historical_moves=historical_moves,
+            uuid=data.get("uuid", str(uuid.uuid4()))  # Use a new UUID if missing
         )
 
     @staticmethod
     def _convert_to_positions(data: np.ndarray) -> List[List[Position]]:
         return [[Position.from_tuple(tuple(pos)) for pos in sublist] for sublist in data]
 
-
     def to_dataframe(self) -> pd.DataFrame:
+        """
+        Converts the object into a Pandas DataFrame.
+        """
         data = {
             'player_ids': json.dumps(self.player_ids),
             'player_start_positions': json.dumps(self._positions_to_dict_list(self.player_start_positions)),
             'player_target_positions': json.dumps(self._positions_to_dict_list(self.player_target_positions)),
-            'historical_moves': json.dumps(self._moves_to_dict_list(self.historical_moves))
+            'historical_moves': json.dumps(self._moves_to_dict_list(self.historical_moves)),
+            'uuid': self.uuid,
         }
-        df = pd.DataFrame([data])
-        return df
+        return pd.DataFrame([data])
 
     @staticmethod
     def from_dataframe(row: pd.Series) -> 'SimulationData':
+        """
+        Reconstructs SimulationData from a Pandas DataFrame row.
+        """
         player_ids = json.loads(row['player_ids'])
         player_start_positions = SimulationData._dict_list_to_positions(json.loads(row['player_start_positions']))
         player_target_positions = SimulationData._dict_list_to_positions(json.loads(row['player_target_positions']))
@@ -89,7 +97,8 @@ class SimulationData(IData):
             player_ids=player_ids,
             player_start_positions=player_start_positions,
             player_target_positions=player_target_positions,
-            historical_moves=historical_moves
+            historical_moves=historical_moves,
+            uuid=row.get('uuid', str(uuid.uuid4()))  # Use a new UUID if missing
         )
 
     @staticmethod
