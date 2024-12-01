@@ -3,12 +3,10 @@ import time
 import random
 from typing import List
 from tqdm import tqdm
-import pandas as pd
-from dataclasses import asdict
 
-from chinese_checkers.simulation import S3SimulationCatalog, SimulationMetadata, SimulationData, GameSimulation
-from chinese_checkers.cnn import CnnEncoderExperience
-from chinese_checkers.experience import S3ExperienceCatalog, ExperienceMetadata
+from chinese_checkers.simulation import S3SimulationCatalog, SimulationMetadata, GameSimulation
+from chinese_checkers.archive.cnn import CnnEncoderExperience
+from chinese_checkers.archive.experience import S3ExperienceCatalog
 
 
 def main(simulation_name: str):
@@ -27,7 +25,7 @@ def main(simulation_name: str):
     ]
 
     # Initialize experience encoder with the specific version
-    exp_encoder = CnnEncoderExperience("v005")
+    exp_encoder = CnnEncoderExperience("v006")
 
     # Shuffle simulations randomly
     random.shuffle(simulations)

@@ -86,7 +86,7 @@ class S3DataCatalog(ABC, ICatalog, Generic[M, DM]):
             path=s3_path,
             dataset=True,
             mode='append',
-            boto3_session=self.s3_session
+            boto3_session=self._s3_session
         )
 
         self.batches[metadata_key] = []
@@ -104,7 +104,7 @@ class S3DataCatalog(ABC, ICatalog, Generic[M, DM]):
         df = wr.s3.read_parquet(
             path=s3_path,
             dataset=True,
-            boto3_session=self.s3_session
+            boto3_session=self._s3_session
         )
 
         # Reconstruct data objects
@@ -170,7 +170,7 @@ class S3DataCatalog(ABC, ICatalog, Generic[M, DM]):
 
         records = []
         for file in selected_files:
-            df = wr.s3.read_parquet(file, boto3_session=self.s3_session)
+            df = wr.s3.read_parquet(file, boto3_session=self._s3_session)
 
             file_records = [
                 self.data_metadata_cls.from_data_metadata(  # Use static method to create an instance
@@ -186,23 +186,57 @@ class S3DataCatalog(ABC, ICatalog, Generic[M, DM]):
     def _fetch_file_keys(self, metadata: M) -> List[str]:
         """
         Fetches a list of all file keys (paths) matching the metadata in the S3 bucket.
+        Filters files using Python for attributes set to None (wildcards).
 
         Args:
-            metadata (M): Metadata to filter the files.
+            metadata (M): Metadata to filter the files. Fields set to `None` act as wildcards.
 
         Returns:
             List[str]: List of file keys.
         """
-        base_key = self._get_s3_key_prefix(metadata)
-        bucket = self._bucket_name()
-        prefix = f"s3://{bucket}/{base_key}"
+        base_prefix = f"{self.s3_prefix}/{self._object_type()}/" if self.s3_prefix else f"{self._object_type()}/"
 
-        file_keys = wr.s3.list_objects(path=prefix, boto3_session=self.s3_session)
+        # List all keys under the base prefix
+        all_file_keys = wr.s3.list_objects(
+            path=f"s3://{self._bucket_name()}/{base_prefix}",
+            boto3_session=self._s3_session
+        )
 
-        if not file_keys:
-            raise ValueError(f"No files found under prefix: {prefix}")
+        if not all_file_keys:
+            raise ValueError(f"No files found under prefix: {base_prefix}")
 
-        return file_keys
+        # Generate filters from metadata, treating None as a wildcard
+        filters = metadata.to_path().parts
+        filter_dict = {part.split('=')[0]: part.split('=')[1] for part in filters if '=' in part and 'None' not in part}
+
+        # Filter keys using Python
+        matching_keys = []
+        for key in all_file_keys:
+            if self._matches_metadata(key, filter_dict):
+                matching_keys.append(key)
+
+        if not matching_keys:
+            raise ValueError(f"No files found matching metadata filters: {filter_dict}")
+
+        return matching_keys
+
+    @staticmethod
+    def _matches_metadata(key: str, filter_dict: dict) -> bool:
+        """
+        Checks if a given S3 key matches the metadata filter.
+
+        Args:
+            key (str): S3 key to check.
+            filter_dict (dict): Dictionary of metadata filters.
+
+        Returns:
+            bool: True if the key matches the filters, False otherwise.
+        """
+        key_parts = PurePosixPath(key).parts
+        for filter_key, filter_value in filter_dict.items():
+            if f"{filter_key}={filter_value}" not in key_parts:
+                return False
+        return True
 
     def _metadata_from_key(self, key: str) -> M:
         prefix = f"{self.s3_prefix}/{self._object_type()}/" if self.s3_prefix else f"{self._object_type()}/"
@@ -234,7 +268,7 @@ class S3DataCatalog(ABC, ICatalog, Generic[M, DM]):
             return None
 
     @property
-    def s3_session(self):
+    def _s3_session(self):
         import boto3
         if self.s3 is not None:
             credentials = self.s3._request_signer._credentials

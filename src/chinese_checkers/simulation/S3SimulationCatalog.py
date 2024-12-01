@@ -69,7 +69,7 @@ class S3SimulationCatalog(S3DataCatalog[SimulationMetadata, GameSimulation]):
             path=s3_path,
             dataset=True,   # Use dataset=True to organize data in a dataset format
             mode='append',  # Append to existing data
-            boto3_session=self.s3_session  # Use the existing boto3 session if needed
+            boto3_session=self._s3_session  # Use the existing boto3 session if needed
         )
 
         # Clear the batch
@@ -83,7 +83,7 @@ class S3SimulationCatalog(S3DataCatalog[SimulationMetadata, GameSimulation]):
         df = wr.s3.read_parquet(
             path=s3_path,
             dataset=True,  # Read as a dataset
-            boto3_session=self.s3_session  # Use the existing boto3 session if needed
+            boto3_session=self._s3_session  # Use the existing boto3 session if needed
         )
 
         # Reconstruct SimulationData instances
@@ -96,7 +96,7 @@ class S3SimulationCatalog(S3DataCatalog[SimulationMetadata, GameSimulation]):
         return simulations
 
     @property
-    def s3_session(self):
+    def _s3_session(self):
         # Create a boto3 session using the s3 client if necessary
         import boto3
         if self.s3 is not None:

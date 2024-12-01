@@ -3,7 +3,7 @@ import unittest
 from build.lib.chinese_checkers.game import Position
 from chinese_checkers.game import Move
 from src.chinese_checkers.game import ChineseCheckersGame, Player
-from chinese_checkers.cnn import RewardEncoder
+from chinese_checkers.archive.cnn import RewardEncoder
 
 class TestRewardEncoder(unittest.TestCase):
     def setUp(self):
