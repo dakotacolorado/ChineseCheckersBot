@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-class DeepQModelNetwork(nn.Module):
+class Network(nn.Module):
     def __init__(self, state_dim: int, state_grid_h: int, state_grid_w: int,
                  move_dim: int, move_grid_h: int, move_grid_w: int,
                  state_output_dim: int, move_output_dim: int, q_hidden_dim: int = 128):
@@ -20,7 +20,7 @@ class DeepQModelNetwork(nn.Module):
             move_output_dim (int): Output dimension for the move encoder.
             q_hidden_dim (int): Hidden dimension for Q-value prediction network.
         """
-        super(DeepQModelNetwork, self).__init__()
+        super(Network, self).__init__()
 
         # State encoder
         self.state_cnn = nn.Sequential(

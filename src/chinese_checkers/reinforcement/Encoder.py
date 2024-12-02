@@ -1,4 +1,5 @@
 import time
+from math import sqrt
 from typing import List, Tuple
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import torch
@@ -7,7 +8,7 @@ from tqdm import tqdm
 from chinese_checkers.simulation import GameSimulation
 from .Experience import Experience
 from chinese_checkers.game import ChineseCheckersGame, Move
-from chinese_checkers.geometry import Centroid
+from chinese_checkers.geometry import Centroid, Vector
 
 
 def encode_game(game: ChineseCheckersGame) -> torch.Tensor:
@@ -57,10 +58,12 @@ def encode_move_from_experience(experience: Experience) -> torch.Tensor:
 
 def encode_reward(game: ChineseCheckersGame, move: Move, winner_id: str, total_turns: int) -> torch.Tensor:
     reward = 0.0
-    reward += _distance_from_win_loss(game, game.turn, total_turns, winner_id)
+    # reward += _distance_from_win_loss(game, game.turn, total_turns, winner_id)
+    board_width = 2 * (game.board.radius * 2 + 1)
     reward += _player_distance_from_target(game, move)
-    reward += _player_positions_in_target(game, move)
+    reward += _player_positions_in_target(game, move) * 2
     reward += _player_positions_not_in_start(game, move)
+    reward += _move_target_direction(game, move) / board_width
 
     return torch.tensor(reward, dtype=torch.float32)
 
@@ -94,6 +97,52 @@ def _player_distance_from_target(game: ChineseCheckersGame, move: Move) -> float
         return normalized_distance
 
 
+TARGET_BY_PLAYER = {
+    "0": Vector(-1, -1),
+    "1": Vector(1, -2),
+    "2": Vector(2, -1),
+    "3": Vector(1, 1),
+    "4": Vector(-1, 2),
+    "5": Vector(-2, 1),
+}
+
+# Precompute normalized target directions
+UNIT_TARGET_DIRECTION_BY_PLAYER = {
+    player: Vector(
+        vec.i / sqrt(vec.i ** 2 + vec.j ** 2),
+        vec.j / sqrt(vec.i ** 2 + vec.j ** 2)
+    )
+    for player, vec in TARGET_BY_PLAYER.items()
+}
+
+
+def _move_target_direction(game: ChineseCheckersGame, move: Move) -> float:
+    """
+    Calculate both the projection of the move onto the target direction (on-direction)
+    and the perpendicular component (off-direction) in one function.
+
+    Returns:
+        (on_direction, off_direction)
+    """
+    unit_target_direction = UNIT_TARGET_DIRECTION_BY_PLAYER[game.get_current_player().player_id]
+    move_direction = move
+
+    # Calculate the projection length
+    projection_length = move_direction.i * unit_target_direction.i + move_direction.j * unit_target_direction.j
+
+    # Calculate the projection vector
+    projection_vector = Vector(projection_length * unit_target_direction.i, projection_length * unit_target_direction.j)
+
+    # Calculate the perpendicular component
+    perpendicular_vector = Vector(move_direction.i - projection_vector.i, move_direction.j - projection_vector.j)
+    perpendicular_length = (perpendicular_vector.i ** 2 + perpendicular_vector.j ** 2) ** 0.5
+
+    # Return the difference of the on-direction and off-direction values
+    return projection_length - abs(perpendicular_length)
+
+
+
+
 def _player_positions_in_target(game: ChineseCheckersGame, move: Move) -> float:
     current_player = game.get_current_player()
     target_positions = set(current_player.target_positions)
@@ -115,7 +164,7 @@ class Encoder:
 
     def batch_encode(self, experiences: List[Experience]) -> Tuple[List[torch.Tensor], List[torch.Tensor], List[torch.Tensor]]:
         total_experiences = len(experiences)
-        print(f"Starting encoding of {total_experiences} experiences using {self.thread_count} workers.")
+        # print(f"Starting encoding of {total_experiences} experiences using {self.thread_count} workers.")
 
         start_time = time.time()
 
@@ -138,7 +187,7 @@ class Encoder:
 
         end_time = time.time()
         elapsed_time = end_time - start_time
-        print(f"Encoding complete. Encoded {total_experiences} experiences in {elapsed_time:.2f} seconds.")
+        # print(f"Encoding complete. Encoded {total_experiences} experiences in {elapsed_time:.2f} seconds.")
 
         return encoded_states, encoded_moves, encoded_rewards
 
