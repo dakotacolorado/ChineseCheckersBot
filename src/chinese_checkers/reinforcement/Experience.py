@@ -11,3 +11,6 @@ class Experience:
     move: Move
     turn: int
     total_turns: int
+
+    def __hash__(self):
+        return self.move.__hash__()

@@ -6,23 +6,9 @@ class Network(nn.Module):
     def __init__(self, state_dim: int, state_grid_h: int, state_grid_w: int,
                  move_dim: int, move_grid_h: int, move_grid_w: int,
                  state_output_dim: int, move_output_dim: int, q_hidden_dim: int = 128):
-        """
-        Unified network for state encoding, move encoding, and Q-value prediction.
-
-        Args:
-            state_dim (int): Number of input channels for state.
-            state_grid_h (int): Height of the state input grid.
-            state_grid_w (int): Width of the state input grid.
-            move_dim (int): Number of input channels for moves.
-            move_grid_h (int): Height of the move input grid.
-            move_grid_w (int): Width of the move input grid.
-            state_output_dim (int): Output dimension for the state encoder.
-            move_output_dim (int): Output dimension for the move encoder.
-            q_hidden_dim (int): Hidden dimension for Q-value prediction network.
-        """
         super(Network, self).__init__()
 
-        # State encoder
+        # State encoder with dropout
         self.state_cnn = nn.Sequential(
             nn.Conv2d(state_dim, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
@@ -30,42 +16,44 @@ class Network(nn.Module):
             nn.ReLU(),
             nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
+            nn.Dropout(0.3)  # Dropout with 30% probability
         )
         dummy_state = torch.zeros(1, state_dim, state_grid_h, state_grid_w)
         flattened_state_size = self.state_cnn(dummy_state).numel()
-        self.state_fc = nn.Linear(flattened_state_size, state_output_dim)
+        self.state_fc = nn.Sequential(
+            nn.Linear(flattened_state_size, state_output_dim),
+            nn.ReLU(),
+            nn.Dropout(0.3)  # Dropout for the fully connected layer
+        )
 
-        # Move encoder
+        # Move encoder with dropout
         self.move_cnn = nn.Sequential(
             nn.Conv2d(move_dim, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
+            nn.Dropout(0.3)  # Dropout with 30% probability
         )
         dummy_move = torch.zeros(1, move_dim, move_grid_h, move_grid_w)
         flattened_move_size = self.move_cnn(dummy_move).numel()
-        self.move_fc = nn.Linear(flattened_move_size, move_output_dim)
+        self.move_fc = nn.Sequential(
+            nn.Linear(flattened_move_size, move_output_dim),
+            nn.ReLU(),
+            nn.Dropout(0.3)  # Dropout for the fully connected layer
+        )
 
-        # Q-value prediction
+        # Q-value prediction with dropout
         self.q_network = nn.Sequential(
             nn.Linear(state_output_dim + move_output_dim, q_hidden_dim),
             nn.ReLU(),
+            nn.Dropout(0.3),
             nn.Linear(q_hidden_dim, q_hidden_dim),
             nn.ReLU(),
-            nn.Linear(q_hidden_dim, 1),  # Output a single Q-value
+            nn.Dropout(0.3),
+            nn.Linear(q_hidden_dim, 1)  # Output a single Q-value
         )
 
     def forward(self, state, move):
-        """
-        Forward pass through the unified network.
-
-        Args:
-            state (Tensor): Input state tensor with shape (batch_size, state_dim, state_grid_h, state_grid_w).
-            move (Tensor): Input move tensor with shape (batch_size, move_dim, move_grid_h, move_grid_w).
-
-        Returns:
-            Tensor: Predicted Q-value with shape (batch_size, 1).
-        """
         if state.dtype == torch.int8:
             state = state.float()
         if move.dtype == torch.int8:

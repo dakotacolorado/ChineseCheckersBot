@@ -1,10 +1,13 @@
 import random
 import time
+from typing import List
+
 from tqdm import tqdm
 
 from chinese_checkers.model import IModel
 from .DeepQModel import DeepQModel
 from chinese_checkers.simulation import GameSimulation
+from .GeneticSelection import GeneticSelector
 from .Validator import Validator
 from .ReplayBuffer import ReplayBuffer
 
@@ -20,6 +23,10 @@ class TrainingAgent:
             version="v1.0.0",
             swap_players: bool = False,
             replay_buffer_size: int = 10000,
+            train_win_bias: float = 2.0,
+            max_hash_queue_size: int = 10,
+            genetic_selection_validation_size: int = 20,
+            genetic_selection_generation_size: int = 5,
     ):
         """
         Initializes the TrainingAgent.
@@ -48,19 +55,30 @@ class TrainingAgent:
             buffer_size=replay_buffer_size,
             player_id="0",
             board_size=board_size,
+            win_bias=train_win_bias,
+            max_hash_queue_size=max_hash_queue_size,
         )
 
         # Validator for model evaluation
         self.validator = Validator(
             board_size=board_size,
             player_count=2,
+            replay_buffer=self.replay_buffer,
+            encoder=model_to_train.encoder,
             max_turns=max_turns,
             simulation_name=name,
             simulation_version=version,
             gamma=self.model_to_train.gamma,
         )
+        self.genetic_selection_generation_size = genetic_selection_generation_size
+        self.genetic_selector = GeneticSelector(
+            baseline_model=self.opponent,
+            validation_size=genetic_selection_validation_size,
+            max_turns=max_turns,
+            board_size=board_size,
+        )
 
-    def bootstrap_training(self, bootstrap_game_count: int):
+    def bootstrap_training(self, bootstrap_game_count: int) -> List[GameSimulation]:
         """
         Plays bootstrap games with the baseline model and logs the win rates.
 
@@ -69,11 +87,12 @@ class TrainingAgent:
         """
         print(f"Starting bootstrap reinforcement with {bootstrap_game_count} games...")
         player_0_wins, player_3_wins, player_none_wins = 0, 0, 0
-
+        training_simulations = []
         with tqdm(total=bootstrap_game_count, desc="Simulating bootstrap games", unit="game", dynamic_ncols=True) as sim_bar:
             for _ in range(bootstrap_game_count):
                 try:
                     simulation = self._simulate_game(opponent_only=True)
+                    training_simulations.append(simulation)
                     self.replay_buffer.add(simulation)
 
                     # Update win statistics
@@ -97,6 +116,7 @@ class TrainingAgent:
         print(f"Player 3 win rate: {(player_3_wins / total_games) * 100:.2f}%")
         print(f"Draw rate: {(player_none_wins / total_games) * 100:.2f}%")
         self.replay_buffer.print_status()
+        return training_simulations
 
     def train(
             self,
@@ -125,20 +145,21 @@ class TrainingAgent:
         print(f"- Training batch size: {training_batch_size}")
 
 
-        self.bootstrap_training(bootstrap_game_count)
+        training_sims = self.bootstrap_training(bootstrap_game_count)
         simulations_since_bootstrap = 0
 
 
-        self._train_and_validate(training_batch_size, validation_size)
+        self._train_and_validate(training_batch_size, validation_size, training_sims)
 
         while total_simulations < training_size:
-
+            training_sims = []
             simulations_to_run = min(training_period, training_size - total_simulations)
-            print(f"Simulating {simulations_to_run} games...")
+            # print(f"Simulating {simulations_to_run} games...")
             with tqdm(total=simulations_to_run, desc="Simulating games", unit="game", dynamic_ncols=True) as sim_bar:
                 for _ in range(simulations_to_run):
                     try:
                         simulation = self._simulate_game()
+                        training_sims.append(simulation)
                         self.replay_buffer.add(simulation)
                         total_simulations += 1
                         simulations_since_bootstrap += 1
@@ -148,13 +169,12 @@ class TrainingAgent:
                         continue
 
             # Train the model with experiences from the replay buffer
-            self._train_and_validate(training_batch_size, validation_size)
-
+            self._train_and_validate(training_batch_size, validation_size, training_sims)
             # Save the model
             self.model_to_train.save(f"{self.simulation_name}-{self.simulation_version}.pt")
-            print(f"Simulations since last bootstrap: {simulations_since_bootstrap} / {bootstrap_update_frequency}")
+            # print(f"Simulations since last bootstrap: {simulations_since_bootstrap} / {bootstrap_update_frequency}")
             if simulations_since_bootstrap >= bootstrap_update_frequency:
-                print(f"Running bootstrap reinforcement with {bootstrap_game_count} games...")
+                # print(f"Running bootstrap reinforcement with {bootstrap_game_count} games...")
                 self.bootstrap_training(bootstrap_game_count)
                 simulations_since_bootstrap = 0
 
@@ -163,14 +183,22 @@ class TrainingAgent:
         print(f"Total simulations run: {total_simulations}")
         self.replay_buffer.print_status()
 
-    def _train_and_validate(self, training_batch_size: int, validation_size: int):
+    def _train_and_validate(self, training_batch_size: int, validation_size: int, training_simulations: List[GameSimulation]):
+        self.replay_buffer.print_status()
         print(f"Training model with {training_batch_size} experiences from the replay buffer.")
-        experiences = self.replay_buffer.sample(training_batch_size)
-        self.model_to_train.train(experiences)
+
+        self.model_to_train = self.genetic_selector.evolve_model(
+            self.model_to_train, self.replay_buffer, training_batch_size,
+            generation_size=self.genetic_selection_generation_size
+        )
+        # experiences = self.replay_buffer.sample(training_batch_size)
+        # self.model_to_train.train(experiences)
 
         self.validator.validate(
             self.model_to_train,
+            generation=self.genetic_selector.generation,
             model_to_validate_player_id=3 if self.swap_players else 0,
+            training_simulations=training_simulations,
             validation_size=validation_size,
             save_animation=True,
             save_report_location=f"{self.simulation_name}_{self.simulation_version}_validation_report.csv",

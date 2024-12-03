@@ -24,7 +24,8 @@ class DeepQModel(IModel):
             q_hidden_dim: int = 128,
             exploration_prob: float = 0.01,
             target_update_freq: int = 1000,
-            gamma: float = 0.99
+            gamma: float = 0.99,
+            learning_rate: float = 0.001
     ):
         """
         Initializes the DeepQModel.
@@ -69,7 +70,7 @@ class DeepQModel(IModel):
         )
 
         # Set up training components
-        self.optimizer = torch.optim.Adam(self.network.parameters(), lr=0.001)
+        self.optimizer = torch.optim.Adam(self.network.parameters(), lr=learning_rate, weight_decay=1e-4)
         self.loss_fn = nn.MSELoss()
 
         # Configure device
@@ -95,6 +96,7 @@ class DeepQModel(IModel):
 
         # Target network update frequency
         self.target_update_freq = target_update_freq
+        self.samples_since_last_target_update = 0
 
     def train(self, experiences: List[Experience], batch_size: int = 64):
         """
@@ -104,13 +106,13 @@ class DeepQModel(IModel):
         :param batch_size: The size of batches to use for training.
         """
         num_samples = len(experiences)
-        print(f"Starting training with {num_samples} experiences, batch size: {batch_size}.")
+        # print(f"Starting training with {num_samples} experiences, batch size: {batch_size}.")
 
         # Use the encoder to process experiences into tensors
         start_time = time.time()
         encoded_states, encoded_moves, encoded_rewards = self.encoder.batch_encode(experiences)
         end_time = time.time()
-        print(f"Encoding completed in {end_time - start_time:.2f} seconds.")
+        # print(f"Encoding completed in {end_time - start_time:.2f} seconds.")
 
         # Initialize accumulators for batching
         state_batch, move_batch, reward_batch = [], [], []
@@ -141,6 +143,7 @@ class DeepQModel(IModel):
 
         # Update the training samples counter
         self.training_samples_seen += num_samples
+        self.samples_since_last_target_update += num_samples
         print(f"Training completed. Total samples seen: {self.training_samples_seen}.")
 
     def _process_batch(self, state_batch: List[torch.Tensor], move_batch: List[torch.Tensor],
@@ -166,10 +169,12 @@ class DeepQModel(IModel):
         self.optimizer.step()
 
         # Increment training steps and update target network if needed
-        if self.training_samples_seen % self.target_update_freq == 0:
+        if self.samples_since_last_target_update >= self.target_update_freq:
+            print(f"Updating target network with {self.training_samples_seen} samples seen.")
+            self.samples_since_last_target_update = 0
             self.target_network.load_state_dict(self.network.state_dict())
 
-    def _choose_next_move(self, game: ChineseCheckersGame) -> Move:
+    def _choose_next_move(self, game: ChineseCheckersGame, move_history: List[Move] = None) -> Move:
         """
         Chooses the next move with tunable random noise based on self.exploration_prob.
 
@@ -180,7 +185,8 @@ class DeepQModel(IModel):
         encoded_state = self.encoder.encode_game(game).float().to(self.device)
 
         # Retrieve all possible moves
-        possible_moves = game.get_next_moves(remove_backwards_moves=True)
+        possible_forward_moves = game.get_next_moves(remove_backwards_moves=True)
+        possible_moves = [move for move in possible_forward_moves if move not in move_history]
 
         # If exploration noise is triggered, select a random move
         if random.random() < self.exploration_prob:
@@ -202,6 +208,8 @@ class DeepQModel(IModel):
                 max_q_value = q_value
                 best_move = move
 
+        if best_move is None:
+            best_move = random.choice(game.get_next_moves())
         return best_move
 
     def save(self, path: str):
@@ -216,7 +224,7 @@ class DeepQModel(IModel):
             'training_samples_seen': self.training_samples_seen,
         }
         torch.save(checkpoint, path)
-        print(f"Model saved to {path}")
+        # print(f"Model saved to {path}")
 
     @staticmethod
     def load(path: str) -> 'DeepQModel':

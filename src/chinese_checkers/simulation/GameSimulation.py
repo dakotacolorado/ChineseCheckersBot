@@ -105,7 +105,10 @@ class GameSimulation(IDataMetadata[SimulationData, SimulationMetadata]):
         while not game.is_game_won() and game.turn < max_turns:
             current_model = models[game.turn % len(models)]
             logger.debug(f"Turn {game.turn}, current player: {game.get_current_player().player_id}")
-            game, move = current_model.make_move(game)
+            try:
+                game, move = current_model.make_move(game, move_history)
+            except:
+                return move_history, game
             move_history.append(move)
             if print_period and game.turn % print_period == 1:
                 game.print()

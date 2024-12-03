@@ -16,7 +16,7 @@ class TestBootstrapModel(unittest.TestCase):
 
     def test_chose_next_move(self):
         # Verify that `_chose_next_move` returns a valid move
-        move = self.model._chose_next_move(self.game)
+        move = self.model._choose_next_move(self.game)
 
         # Assert that a move is returned and that it's a Move instance
         self.assertIsNotNone(move, "The model did not return a move.")
@@ -31,7 +31,7 @@ class TestBootstrapModel(unittest.TestCase):
 
         # Check that an exception is raised when there are no moves
         with self.assertRaises(Exception) as context:
-            self.model._chose_next_move(self.game)
+            self.model._choose_next_move(self.game)
         self.assertEqual(str(context.exception), "No viable move found", "Unexpected exception message.")
 
 

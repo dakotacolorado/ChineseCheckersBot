@@ -23,7 +23,7 @@ class BootstrapModel(IModel):
         self.dont_fail = dont_fail
         self.random_noise = random_noise
 
-    def _choose_next_move(self, game: ChineseCheckersGame) -> Move:
+    def _choose_next_move(self, game: ChineseCheckersGame, move_history: List[Move] = None) -> Move:
         """
         The BootstrapModel provides a foundational strategy for gameplay, serving as a
         bootstrapped or initial mechanism for move selection. This basic approach can

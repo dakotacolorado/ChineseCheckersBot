@@ -58,12 +58,14 @@ def encode_move_from_experience(experience: Experience) -> torch.Tensor:
 
 def encode_reward(game: ChineseCheckersGame, move: Move, winner_id: str, total_turns: int) -> torch.Tensor:
     reward = 0.0
-    # reward += _distance_from_win_loss(game, game.turn, total_turns, winner_id)
-    board_width = 2 * (game.board.radius * 2 + 1)
+    # if game.turn + 1 >= total_turns:
+        # reward += 10.0 if game.get_current_player().player_id == winner_id else -10.0
+    # reward += _distance_from_win_loss(game, game.turn, total_turns, winner_id)**3
+    # board_width = 2 * (game.board.radius * 2 + 1)
     reward += _player_distance_from_target(game, move)
-    reward += _player_positions_in_target(game, move) * 2
-    reward += _player_positions_not_in_start(game, move)
-    reward += _move_target_direction(game, move) / board_width
+    reward += _player_positions_in_target(game, move) ** 2 #((_player_positions_in_target(game, move) + 1)**2 - 1) * 4
+    # reward += _player_positions_not_in_start(game, move) #((_player_positions_not_in_start(game, move) + 1)**2 - 1) / 2
+    # reward += _move_target_direction(game, move) / board_width
 
     return torch.tensor(reward, dtype=torch.float32)
 
@@ -138,7 +140,7 @@ def _move_target_direction(game: ChineseCheckersGame, move: Move) -> float:
     perpendicular_length = (perpendicular_vector.i ** 2 + perpendicular_vector.j ** 2) ** 0.5
 
     # Return the difference of the on-direction and off-direction values
-    return projection_length - abs(perpendicular_length)
+    return projection_length - abs(perpendicular_length)/8
 
 
 
