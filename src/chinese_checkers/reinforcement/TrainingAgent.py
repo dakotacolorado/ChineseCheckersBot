@@ -197,6 +197,7 @@ class TrainingAgent:
         self.validator.validate(
             self.model_to_train,
             generation=self.genetic_selector.generation,
+            new_generation=self.genetic_selector.new_generation,
             model_to_validate_player_id=3 if self.swap_players else 0,
             training_simulations=training_simulations,
             validation_size=validation_size,

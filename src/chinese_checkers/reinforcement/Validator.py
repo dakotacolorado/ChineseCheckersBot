@@ -92,6 +92,7 @@ class Validator:
             model_to_validate_player_id: int,
             training_simulations: List[GameSimulation],
             generation: int,
+            new_generation: bool,
             validation_size: int = 50,
             save_animation: bool = False,
             save_report_location: str = None,
@@ -122,6 +123,7 @@ class Validator:
 
         validation_data = {
             "generation": generation,
+            "new_generation": new_generation,
             "training_samples_seen": model_to_validate.training_samples_seen,
             "validation_iteration": self.validation_iteration,
             "player_id": model_to_validate_player_id,
@@ -257,6 +259,14 @@ class Validator:
         validation_df.to_csv(save_report_location, index=False)
         return validation_df
 
+    def _add_vertical_lines(self, ax, validation_df, column_name="new_generation", x_column="generation", line_color="grey",
+                            line_style="--", alpha=0.7):
+        """
+        Add vertical lines to the plot for each point where a specific condition is True.
+        """
+        for x_val in validation_df.loc[validation_df[column_name] == True, x_column]:
+            ax.axvline(x=x_val, color=line_color, linestyle=line_style, alpha=alpha)
+
     def _display_report(self, save_report_location: str):
         validation_df = pd.read_csv(save_report_location)
 
@@ -280,6 +290,7 @@ class Validator:
         axs[0].set_ylabel("Percentage")
         axs[0].legend()
         axs[0].grid(True)
+        self._add_vertical_lines(axs[0], validation_df)
 
         # Plot 2: Regular Error
         axs[1].plot(
@@ -306,6 +317,7 @@ class Validator:
         axs[1].set_ylabel("Error")
         axs[1].legend()
         axs[1].grid(True)
+        self._add_vertical_lines(axs[1], validation_df)
 
         # Plot 3: Discounted Error
         axs[2].plot(
@@ -332,6 +344,7 @@ class Validator:
         axs[2].set_ylabel("Error")
         axs[2].legend()
         axs[2].grid(True)
+        self._add_vertical_lines(axs[2], validation_df)
 
         # Plot 4: Average Turn Count
         axs[3].plot(
@@ -344,6 +357,7 @@ class Validator:
         axs[3].set_ylabel("Turns")
         axs[3].legend()
         axs[3].grid(True)
+        self._add_vertical_lines(axs[3], validation_df)
 
         # Adjust layout and show
         plt.tight_layout()

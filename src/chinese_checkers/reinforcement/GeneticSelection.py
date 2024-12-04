@@ -15,6 +15,7 @@ class GeneticSelector:
         self.max_turns = max_turns
         self.board_size = board_size
         self.generation = 0
+        self.new_generation = True
 
     def evolve_model(self, model: DeepQModel, replay_buffer: ReplayBuffer, training_batch_size,  generation_size: int = 5) -> DeepQModel:
         """
@@ -31,7 +32,12 @@ class GeneticSelector:
             child.train(experiences)
         population = [model] + children
         self.generation += 1
-        return self.select_winner(population, self.validation_size)
+        winner, index =  self.select_winner(population, self.validation_size)
+        if index == 0:
+            self.new_generation = False
+        else:
+            self.new_generation = True
+        return winner
 
 
     def select_winner(self, population: List[DeepQModel], simulation_count: int) -> DeepQModel:
@@ -48,14 +54,14 @@ class GeneticSelector:
             win_rate = sum([s.metadata.winning_player == "0" for s in simulations]) / simulation_count
             draw_rate = sum([s.metadata.winning_player is None for s in simulations]) / simulation_count
             print(f"Model {i} win rate: {win_rate}, draw rate: {draw_rate}")
-            if min_draw_rate >= draw_rate:
-                if max_win_rate < win_rate:
+            if min_draw_rate >= draw_rate - 5/simulation_count:
+                if max_win_rate <= win_rate:
                     max_win_rate = win_rate
                     min_draw_rate = draw_rate
                     best_model = p
                     best_model_index = i
         print(f"Best model is model {best_model_index} with win rate: {max_win_rate}, draw rate: {min_draw_rate}")
-        return best_model
+        return best_model, best_model_index
 
 
     def _simulate_game(self, model_to_validate: DeepQModel) -> GameSimulation:
