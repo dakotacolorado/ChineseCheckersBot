@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import List, Tuple
 
 from chinese_checkers.game import ChineseCheckersGame
 from chinese_checkers.model import IModel
@@ -9,8 +9,9 @@ from chinese_checkers.simulation import GameSimulation
 
 
 class GeneticSelector:
-    def __init__(self, baseline_model: IModel, validation_size: int = 50, max_turns: int = 100, board_size: int = 4):
+    def __init__(self, baseline_model: IModel, player_count: int = 2, validation_size: int = 50, max_turns: int = 100, board_size: int = 4):
         self.baseline_model = baseline_model
+        self.player_count = player_count
         self.validation_size = validation_size
         self.max_turns = max_turns
         self.board_size = board_size
@@ -40,7 +41,7 @@ class GeneticSelector:
         return winner
 
 
-    def select_winner(self, population: List[DeepQModel], simulation_count: int) -> DeepQModel:
+    def select_winner(self, population: List[DeepQModel], simulation_count: int) -> Tuple[DeepQModel, int]:
         """
         Evolves a generation of models by selecting the best models from the population.
         """
@@ -60,7 +61,7 @@ class GeneticSelector:
                     min_draw_rate = draw_rate
                     best_model = p
                     best_model_index = i
-        print(f"Best model is model {best_model_index} with win rate: {max_win_rate}, draw rate: {min_draw_rate}")
+        print(f"Best model is model {best_model_index} with win rate: {max_win_rate:.2f}, draw rate: {min_draw_rate:.2f}")
         return best_model, best_model_index
 
 
@@ -69,7 +70,7 @@ class GeneticSelector:
         Simulates a game between the model to validate and the opponent.
         """
         return GameSimulation.simulate_game(
-            models=[model_to_validate, self.baseline_model],
+            models=[model_to_validate] + [self.baseline_model for i in range(self.player_count - 1)],
             name="genetic_selection",
             version="v1.0.0",
             max_turns=self.max_turns,

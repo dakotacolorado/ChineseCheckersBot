@@ -101,15 +101,20 @@ class GameSimulation(IDataMetadata[SimulationData, SimulationMetadata]):
     def _run_game_simulation(game, models, max_turns, print_period):
         """Simulates a game by alternating moves among models until a win or max turns."""
         logger.debug("Running game simulation.")
-        move_history = []
+        move_history = {
+            player.player_id: [] for player in game.players
+        }
+        move_sequence = []
         while not game.is_game_won() and game.turn < max_turns:
             current_model = models[game.turn % len(models)]
-            logger.debug(f"Turn {game.turn}, current player: {game.get_current_player().player_id}")
+            player_id = game.get_current_player().player_id
+            logger.debug(f"Turn {game.turn}, current player: {player_id}")
             try:
                 game, move = current_model.make_move(game, move_history)
             except:
-                return move_history, game
-            move_history.append(move)
+                return move_sequence, game
+            move_sequence.append(move)
+            move_history[player_id].append(move)
             if print_period and game.turn % print_period == 1:
                 game.print()
 
@@ -117,7 +122,7 @@ class GameSimulation(IDataMetadata[SimulationData, SimulationMetadata]):
             logger.info(f"Game won by player {game.get_winner().player_id} in {game.turn} turns.")
         else:
             logger.debug(f"Game did not finish within the maximum of {max_turns} turns.")
-        return move_history, game
+        return move_sequence, game
 
     @staticmethod
     def _construct_simulation_data(game, move_history, name, version, max_turns):

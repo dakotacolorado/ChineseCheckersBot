@@ -1,5 +1,6 @@
 import random
 import time
+from collections import defaultdict
 from typing import List
 
 from tqdm import tqdm
@@ -17,11 +18,11 @@ class TrainingAgent:
             self,
             model_to_train: DeepQModel,
             opponent: IModel,
+            player_count: int = 2,
             max_turns=1000,
             board_size=4,
             name="training_simulation",
             version="v1.0.0",
-            swap_players: bool = False,
             replay_buffer_size: int = 10000,
             train_win_bias: float = 2.0,
             max_hash_queue_size: int = 10,
@@ -38,13 +39,12 @@ class TrainingAgent:
             board_size (int): Size of the game board (default: 4).
             name (str): Name of the simulation (default: "training_simulation").
             version (str): Version of the simulation (default: "v1.0.0").
-            swap_players (bool): Whether to swap players during training (default: False).
             replay_buffer_size (int): Maximum size of the replay buffer (default: 10000).
         """
         # Simulation configuration
         self.model_to_train = model_to_train
         self.opponent = opponent
-        self.swap_players = swap_players
+        self.player_count = player_count
         self.max_turns = max_turns
         self.board_size = board_size
         self.simulation_name = name
@@ -62,7 +62,7 @@ class TrainingAgent:
         # Validator for model evaluation
         self.validator = Validator(
             board_size=board_size,
-            player_count=2,
+            player_count=self.player_count,
             replay_buffer=self.replay_buffer,
             encoder=model_to_train.encoder,
             max_turns=max_turns,
@@ -73,6 +73,7 @@ class TrainingAgent:
         self.genetic_selection_generation_size = genetic_selection_generation_size
         self.genetic_selector = GeneticSelector(
             baseline_model=self.opponent,
+            player_count=player_count,
             validation_size=genetic_selection_validation_size,
             max_turns=max_turns,
             board_size=board_size,
@@ -86,9 +87,11 @@ class TrainingAgent:
             bootstrap_game_count (int): Number of games to simulate during bootstrap.
         """
         print(f"Starting bootstrap reinforcement with {bootstrap_game_count} games...")
-        player_0_wins, player_3_wins, player_none_wins = 0, 0, 0
+        win_counts = defaultdict(int)
         training_simulations = []
-        with tqdm(total=bootstrap_game_count, desc="Simulating bootstrap games", unit="game", dynamic_ncols=True) as sim_bar:
+
+        with tqdm(total=bootstrap_game_count, desc="Simulating bootstrap games", unit="game",
+                  dynamic_ncols=True) as sim_bar:
             for _ in range(bootstrap_game_count):
                 try:
                     simulation = self._simulate_game(opponent_only=True)
@@ -97,24 +100,23 @@ class TrainingAgent:
 
                     # Update win statistics
                     winner = simulation.metadata.winning_player
-                    if winner == "0":
-                        player_0_wins += 1
-                    elif winner == "3":
-                        player_3_wins += 1
-                    else:
-                        player_none_wins += 1
+                    win_counts[winner] += 1
 
                     sim_bar.update(1)
                 except Exception as e:
                     print(f"Warning: Failed to simulate game. Error: {e}")
                     continue
 
-        total_games = player_0_wins + player_3_wins + player_none_wins
+        total_games = sum(win_counts.values())
         print(f"Bootstrap reinforcement completed.")
         print(f"Total games simulated: {total_games}")
-        print(f"Player 0 win rate: {(player_0_wins / total_games) * 100:.2f}%")
-        print(f"Player 3 win rate: {(player_3_wins / total_games) * 100:.2f}%")
-        print(f"Draw rate: {(player_none_wins / total_games) * 100:.2f}%")
+
+        # Print win rates for all players and None
+        for player, wins in sorted(win_counts.items(), key=lambda x: (x[0] is None, x[0])):
+            player_label = 'None' if player is None else player
+            rate = (wins / total_games) * 100 if total_games > 0 else 0
+            print(f"Player {player_label} win rate: {rate:.2f}%")
+
         self.replay_buffer.print_status()
         return training_simulations
 
@@ -126,6 +128,7 @@ class TrainingAgent:
             validation_size: int = 50,
             bootstrap_game_count: int = 20,
             bootstrap_update_frequency: int = 1000,
+            train_before_simulating_first_batch: bool = True,
     ):
         """
         Trains the model by simulating games and using the replay buffer for experience storage and sampling.
@@ -144,12 +147,10 @@ class TrainingAgent:
         print(f"- Total reinforcement size: {training_size}")
         print(f"- Training batch size: {training_batch_size}")
 
-
-        training_sims = self.bootstrap_training(bootstrap_game_count)
+        if train_before_simulating_first_batch:
+            training_sims = self.bootstrap_training(bootstrap_game_count)
+            self._train_and_validate(training_batch_size, validation_size, training_sims)
         simulations_since_bootstrap = 0
-
-
-        self._train_and_validate(training_batch_size, validation_size, training_sims)
 
         while total_simulations < training_size:
             training_sims = []
@@ -198,7 +199,7 @@ class TrainingAgent:
             self.model_to_train,
             generation=self.genetic_selector.generation,
             new_generation=self.genetic_selector.new_generation,
-            model_to_validate_player_id=3 if self.swap_players else 0,
+            model_to_validate_player_id=0,
             training_simulations=training_simulations,
             validation_size=validation_size,
             save_animation=True,
@@ -216,9 +217,12 @@ class TrainingAgent:
         Returns:
             GameSimulation: The simulation result.
         """
-        models = [self.opponent, self.opponent] if opponent_only else (
-            [self.opponent, self.model_to_train] if self.swap_players else [self.model_to_train, self.opponent]
-        )
+        models = []
+        if opponent_only:
+            models = [self.opponent for _ in range(self.player_count)]
+        else:
+            models = [self.model_to_train] + [self.opponent for i in range(self.player_count - 1)]
+
         return GameSimulation.simulate_game(
             models=models,
             name=self.simulation_name,

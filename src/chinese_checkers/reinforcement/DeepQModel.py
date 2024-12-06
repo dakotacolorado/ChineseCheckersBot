@@ -1,7 +1,7 @@
 import random
 import time
 from multiprocessing import cpu_count
-from typing import List
+from typing import List, Dict
 
 import torch
 from torch import nn
@@ -42,7 +42,7 @@ class DeepQModel(IModel):
         self.board_dim = 2 * (board_size + 1)
         self.exploration_prob = exploration_prob
         self.training_samples_seen = 0  # Initialize counter for training samples
-
+        self.player_id = player_id
         # Define model parameters for saving/loading
         self.model_params = {
             'board_size': board_size,
@@ -174,7 +174,7 @@ class DeepQModel(IModel):
             self.samples_since_last_target_update = 0
             self.target_network.load_state_dict(self.network.state_dict())
 
-    def _choose_next_move(self, game: ChineseCheckersGame, move_history: List[Move] = None) -> Move:
+    def _choose_next_move(self, game: ChineseCheckersGame, move_history: Dict[str, List[Move]] = None) -> Move:
         """
         Chooses the next move with tunable random noise based on self.exploration_prob.
 
@@ -186,7 +186,7 @@ class DeepQModel(IModel):
 
         # Retrieve all possible moves
         possible_forward_moves = game.get_next_moves(remove_backwards_moves=True)
-        possible_moves = [move for move in possible_forward_moves if move not in move_history]
+        possible_moves = [move for move in possible_forward_moves if move not in move_history[self.player_id]]
 
         # If exploration noise is triggered, select a random move
         if random.random() < self.exploration_prob:
@@ -248,6 +248,7 @@ class DeepQModel(IModel):
             q_hidden_dim=model_params['q_hidden_dim'],
             exploration_prob=model_params.get('exploration_prob', 0.01),
             gamma=model_params.get('gamma', 0.99),
+            learning_rate=model_params.get('learning_rate', 0.001),
         )
 
         # Load the network weights
